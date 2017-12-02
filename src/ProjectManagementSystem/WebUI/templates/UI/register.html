@@ -1,0 +1,27 @@
+{% extends 'UI/base.html' %}
+
+{% block content %}
+<div class="login-dark">
+  <form method="post" action=" {% url 'user_register' %}">
+    {% csrf_token %}
+    <h2 class="sr-only">Signup Form</h2>
+    <div class="illustration"><i class="fa fa-sign-in"></i></div>
+    <div class="form-group">
+        <input class="form-control" type="text" name="username" placeholder="Username" />
+    </div>
+    <div class="form-group">
+        <input class="form-control" type="email" name="email" placeholder="Email" />
+    </div>
+    <div class="form-group">
+        <input class="form-control" type="password" name="password" placeholder="Password" />
+    </div>
+    <div class="form-group">
+        <input class="form-control" type="password" name="confirmpassword" placeholder="Confirm Password" />
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary btn-block" type="submit">Sign Up</button>
+    </div>
+    <a href="#" class="forgot">Already registered? Click here to log in</a>
+  </form>
+</div>
+{% endblock %}
