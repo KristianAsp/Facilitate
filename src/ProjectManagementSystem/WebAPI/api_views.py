@@ -70,7 +70,7 @@ class UserDetail(APIView):
     def get_object(self, pk):
         try:
             return User.objects.get(pk = pk)
-        except Project.DoesNotExist:
+        except User.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
@@ -109,7 +109,7 @@ class TicketDetail(APIView):
     def get_object(self, pk):
         try:
             return Ticket.objects.get(pk = pk)
-        except Project.DoesNotExist:
+        except Ticket.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):

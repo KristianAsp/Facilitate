@@ -23,7 +23,6 @@ def user_login(request):
         return HttpResponseRedirect('/')
     return HttpResponseRedirect('/dashboard/')
 
-
 @login_required
 def dashboard_index(request):
     context = {}
