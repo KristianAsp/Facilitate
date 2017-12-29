@@ -6,10 +6,19 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 
+#####
+# use a signal to detect when a user has been created. When it is created, a unique Token should be allocated to this user
+# for authentication purposes whenever they use the API.
+#####
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_authentication_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+
 
 class Project(models.Model):
     name = models.CharField(max_length=30)
-    owner = models.CharField(max_length=30)
+    owner = models.ForeignKey(User)
 
     def __str__(self):
         return self.name
@@ -19,7 +28,7 @@ class Project(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    projects = models.ManyToManyField(Project)
+    projects = models.ManyToManyField(Project, blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -28,6 +37,7 @@ class Profile(models.Model):
 class Ticket(models.Model):
     name = models.CharField(max_length=30)
     description = models.TextField()
+    project = models.ForeignKey(Project)
 
     TYPE_CHOICES = (
         ('S', 'Story'),
@@ -60,21 +70,3 @@ class Ticket(models.Model):
 
     def __str__(self):
         return self.name
-
-#####
-# use a signal to detect when a user has been created. When it is created, a unique Token should be allocated to this user
-# for authentication purposes whenever they use the API.
-#####
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_authentication_token(sender, instance=None, created=False, **kwargs):
-    if created:
-        Token.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()

@@ -79,9 +79,43 @@
   margin-bottom: 0;
 }
 .navbar .container-fluid{
-  margin: 0 5vw;
+  margin: 0 2vw;
 }
 
 .dropdown-toggle {
   text-align: center;
+}
+
+.glyphicon{
+  color: black;
+}
+
+.glyphicon-saved {
+  color: white !important;
+}
+
+.errors ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  color: #B23A31;
+}
+
+.errors {
+  margin-bottom: 1em;
+  text-align: center;
+}
+
+.new_project {
+  margin-top: 3vh;
+}
+
+.heading h2 {
+    margin-bottom: 3px;
+}
+
+.heading-description {
+  color: #586069;
+  font-size: 14px;
+  flex: 1 100%;
 }

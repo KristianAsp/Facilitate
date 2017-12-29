@@ -38,7 +38,7 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
-        #'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     )
 }
 MIDDLEWARE = [
@@ -119,7 +119,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/' 
+STATIC_URL = '/static/'
 LOGIN_URL = '/'
-LOGIN_REDIRECT_URL = '/' #Redirect to this URL whenever it fails the @login_required decorator check
+LOGIN_REDIRECT_URL = '/login' #Redirect to this URL whenever it fails the @login_required decorator check
 SESSION_COOKIE_AGE = 259200 #Set the duration for each session to last a maximum of 3 days

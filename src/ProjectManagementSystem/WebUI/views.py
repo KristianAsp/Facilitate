@@ -10,78 +10,117 @@ import hashlib
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from .forms import LoginForm, RegisterForm, NewProjectForm
+import pdb
 
+API_URL = 'http://127.0.0.1:8000/api/'
 
+######
+# Obtain authentication token from API
+######
+def get_auth_token(request, username, password):
+    URL = API_URL + 'get_auth_token/'
+    data = dict(username = username, password = password)
+
+    r = requests.post(URL, data = data)
+    data_json = r.json()
+    request.session['auth'] = data_json['token']
+
+@csrf_exempt
 def user_login(request):
-    username = request.POST.get("username")
-    password = request.POST.get("password")
+    form = LoginForm(request.POST)
 
-    user = authenticate(request, username = username, password = password)
-    if user is not None:
-        login(request, user)
-    else:
-        return HttpResponseRedirect('/')
-    return HttpResponseRedirect('/dashboard/')
+    if form.is_valid():
+        username = request.POST.get("username") #cleaned_data.get did not work. Find out why
+        password = request.POST.get("password") #cleaned_data.get did not work. Find out why
 
-@login_required
+        user = authenticate(request, username = username, password = password)
+        if user is not None:
+            login(request, user)
+            get_auth_token(request, username = username, password = password)
+            return HttpResponseRedirect('/dashboard/')
+    return render(request, 'UI/login.html', {'form': form})
+
 def dashboard_index(request):
-    context = {}
+    rootURL = API_URL + 'projects/'
+
+    # SAMPLE GET REQUEST
+    ######
+    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
+    try:
+        ro = requests.get(rootURL, headers = data)
+        data = {'projects' : ro.json(), }
+    except ValueError:
+        data = {}
+        print('error')
     template = loader.get_template('UI/user/dashboard.html')
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(data, request))
 
 def user_register(request):
-    username = request.POST.get("username")
-    password = request.POST.get("password")
-    email = request.POST.get("email")
+    form = RegisterForm(request.POST)
 
-    new_user = User(username = username, email = email)
-    new_user.set_password(password)
-    new_user.save()
-    user = authenticate(request, username = username, password = password)
-    if not user:
-        return HttpResponseRedirect('https://www.google.com')
-    if user.is_authenticated:
+    if form.is_valid():
+        user = form.save(commit=False)
+        user.set_password(form.cleaned_data.get('password'))
+        user.save()
         login(request, user)
-    return HttpResponseRedirect('/dashboard/')
+        return HttpResponseRedirect('/dashboard/')
+    return render(request, 'UI/register.html', {'form': form})
 
 def register_index(request):
-    context = {}
-    template = loader.get_template('UI/register.html')
-    return HttpResponse(template.render(context, request))
+    if request.method == "POST":
+        return user_register(request)
+
+    if request.method == "GET":
+        form = RegisterForm()
+        return render(request, 'UI/register.html', {'form': form})
+
+    return HttpResponseBadRequest
 
 def login_index(request):
     if request.method == "POST":
         return user_login(request)
 
     if request.method == "GET":
-        context = {}
-        template = loader.get_template('UI/login.html')
-        return HttpResponse(template.render(context, request))
+        form = LoginForm()
+        return render(request, 'UI/login.html', {'form': form})
 
     return HttpResponseBadRequest
 
 @login_required
 def user_logout(request):
-    logout(user)
+    logout(request)
     return HttpResponseRedirect('/')
 
 def index(request):
     context = {}
     template = loader.get_template('UI/index.html')
     return HttpResponse(template.render(context, request))
-    #rootURL = 'http://127.0.0.1:8000/products/1/'
 
-    #######
-    # SAMPLE GET REQUEST
-    ######
-    #r = urlopen(rootURL).read().decode('utf-8')
-    #data = json.loads(r)
-    #html = "<html><body><pre>Data: %s.</pre></body></html>" % json.dumps(data['hello'], indent=2)
+def new_project(request):
+    if request.method == "GET":
+        form = NewProjectForm()
+        return render(request, 'UI/project/new.html', {'form' : form})
 
-    #######
-    # SAMPLE POST REQUEST
-    ######
-    #post_fields = {'name': 'My Project Name', 'owner':'Kristian'}
-    #response = requests.post(rootURL, data = post_fields)
-    #responseJsonParsed = json.loads(response.text)
-    #return JsonResponse(responseJsonParsed)
+    if request.method == "POST":
+        form = NewProjectForm(request.POST)
+
+        if form.is_valid():
+            rootURL = 'http://127.0.0.1:8000/api/projects/'
+            post_fields = form.cleaned_data
+            response = requests.post(rootURL, data = post_fields)
+            responseJsonParsed = json.dumps(response.text)
+            return JsonResponse(responseJsonParsed, safe=False)
+
+def display_tickets(request, id):
+    rootURL = API_URL + 'projects/tickets/' + id
+
+    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
+    try:
+        ro = requests.get(rootURL, headers = data)
+        data = {'tickets' : ro.json(), }
+    except ValueError:
+        data = {}
+        print('error')
+    template = loader.get_template('UI/user/dashboard.html')
+    return HttpResponse(template.render(data, request))

@@ -5,25 +5,52 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.models import Token
+from django.core import serializers as core_serializers
 from .serializers import ProjectSerializer, UserSerializer
 from django.http import HttpResponse, JsonResponse, QueryDict, Http404
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
-from .models import Project, Ticket
-import json
+from rest_framework.renderers import JSONRenderer
+from .models import Project, Ticket, Profile
+import json, pdb
+
+class AuthenticateUser(APIView):
+    def get(self, request):
+        user = authenticate(request, username = request.POST.get("username"), password = request.POST.get("password"))
+        if user is not None:
+            return True
+        return False
+
+class LoginUser(APIView):
+    def get(self, request):
+        user = authenticate(request, username = request.POST.get("username"), password = request.POST.get("password"))
+        if user is not None:
+            login(request, user)
+            return True
+        return False
+
+class LogoutUser(APIView):
+    def get(self, request):
+        logout(request)
+        return True
 
 class ProjectList(APIView):
     def get(self, request, format=None):
-        #user = User.objects.get(pk=request.user.id)
-        #projects = user.projects.all()
-        projects = Project.objects.all()
+        auth_token = request.META.get('HTTP_AUTHORIZATION').replace("Token ", "")
+        token = Token.objects.get(key = auth_token)
+        user = User.objects.get(username=token.user)
+        profile = Profile.objects.get(user = user)
+        projects = Project.objects.filter(owner = user)
         serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
+        return JsonResponse(serializer.data, safe=False)
 
     def post(self, request, format=None):
         serializer = ProjectSerializer(data = request.data)
         if serializer.is_valid():
+            serializer.owner = request.user
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -91,14 +118,14 @@ class UserDetail(APIView):
         user.delete()
         return Response(status = status.HTTP_204_NO_CONTENT)
 
-
 class TicketList(APIView):
-    def get(self, request, format=None):
-        tickets = Ticket.objects.all()
+    def get(self, request, pk, format=None):
+        project = Project.objects.get(pk = pk)
+        tickets = Ticket.objects.filter(project = project)
         serializer = TicketSerializer(tickets, many=True)
         return Response(serializer.data)
 
-    def post(self, request, format=None):
+    def post(self, request, pk, format=None):
         serializer = UserSerializer(data = request.DATA)
         if serializer.is_valid():
             serializer.save()
