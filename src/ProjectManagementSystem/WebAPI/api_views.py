@@ -43,15 +43,23 @@ class ProjectList(APIView):
         token = Token.objects.get(key = auth_token)
         user = User.objects.get(username=token.user)
         profile = Profile.objects.get(user = user)
-        projects = Project.objects.filter(owner = user)
+
+        projects = profile.projects.all()
         serializer = ProjectSerializer(projects, many=True)
         return JsonResponse(serializer.data, safe=False)
 
     def post(self, request, format=None):
-        serializer = ProjectSerializer(data = request.data)
+        auth_token = request.META.get('HTTP_AUTHORIZATION').replace("Token ", "")
+        token = Token.objects.get(key = auth_token)
+        user = User.objects.get(username = token.user)
+        profile = Profile.objects.get(user = user)
+        data = request.data.copy()
+        data['owner'] = user.id
+        serializer = ProjectSerializer(data = data)
+
         if serializer.is_valid():
-            serializer.owner = request.user
-            serializer.save()
+            project = serializer.save()
+            profile.projects.add(project)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

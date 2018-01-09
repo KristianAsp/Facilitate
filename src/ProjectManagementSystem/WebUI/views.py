@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from .forms import LoginForm, RegisterForm, NewProjectForm
+from WebAPI.models import Profile
 import pdb
 
 API_URL = 'http://127.0.0.1:8000/api/'
@@ -41,6 +42,7 @@ def user_login(request):
             return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/login.html', {'form': form})
 
+@login_required
 def dashboard_index(request):
     rootURL = API_URL + 'projects/'
 
@@ -63,7 +65,10 @@ def user_register(request):
         user = form.save(commit=False)
         user.set_password(form.cleaned_data.get('password'))
         user.save()
+        profile = Profile(user = user)
+        profile.save()
         login(request, user)
+        get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
         return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/register.html', {'form': form})
 
@@ -97,6 +102,7 @@ def index(request):
     template = loader.get_template('UI/index.html')
     return HttpResponse(template.render(context, request))
 
+@login_required
 def new_project(request):
     if request.method == "GET":
         form = NewProjectForm()
@@ -106,12 +112,14 @@ def new_project(request):
         form = NewProjectForm(request.POST)
 
         if form.is_valid():
+            data = { 'Authorization' : 'Token ' + request.session['auth']}
             rootURL = 'http://127.0.0.1:8000/api/projects/'
             post_fields = form.cleaned_data
-            response = requests.post(rootURL, data = post_fields)
+            response = requests.post(rootURL, headers = data, data = post_fields)
             responseJsonParsed = json.dumps(response.text)
-            return JsonResponse(responseJsonParsed, safe=False)
+            return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully created' })
 
+@login_required
 def display_tickets(request, id):
     rootURL = API_URL + 'projects/tickets/' + id
 

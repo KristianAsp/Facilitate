@@ -180,18 +180,15 @@ body {
     left: 0;
     height: 93vh;
     z-index: 999;
-    background: #7386D5;
-    color: #fff;
+    background: #fff;
+    color: #7386D5;
     transition: all 0.3s;
-}
-
-#sidebar.active {
-    margin-left: -250px;
+    box-shadow: 0px 1px 1px #000;
 }
 
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #6d7fcc;
+    background: #fff;
 }
 
 #sidebar ul.components {
@@ -200,7 +197,7 @@ body {
 }
 
 #sidebar ul p {
-    color: #fff;
+    color: #7386D5;
     padding: 10px;
 }
 
@@ -210,57 +207,14 @@ body {
     display: block;
 }
 #sidebar ul li a:hover {
-    color: #7386D5;
-    background: #fff;
-}
-
-#sidebar ul li.active > a, a[aria-expanded="true"] {
     color: #fff;
-    background: #6d7fcc;
+    background: #7386D5;
 }
-
-
-.wrapper a[data-toggle="collapse"] {
-    position: relative;
-}
-
-.wrapper a[aria-expanded="false"]::before, .wrapper a[aria-expanded="true"]::before {
-    content: '\e259';
-    display: block;
-    position: absolute;
-    right: 20px;
-    font-family: 'Glyphicons Halflings';
-    font-size: 0.6em;
-}
-.wrapper a[aria-expanded="true"]::before {
-    content: '\e260';
-}
-
 
 .wrapper ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
     background: #6d7fcc;
-}
-
-.wrapper ul.CTAs {
-    padding: 20px;
-}
-
-.wrapper ul.CTAs a {
-    text-align: center;
-    font-size: 0.9em !important;
-    display: block;
-    border-radius: 5px;
-    margin-bottom: 5px;
-}
-.wrapper a.download {
-    background: #fff;
-    color: #7386D5;
-}
-.wrapper a.article, .wrapper a.article:hover {
-    background: #6d7fcc !important;
-    color: #fff !important;
 }
 
 
@@ -280,7 +234,18 @@ body {
     width: 100%;
 }
 
+.wrapper a[aria-expanded="false"]::before, .wrapper a[aria-expanded="true"]::before {
+    content: '\e259';
+    display: block;
+    position: absolute;
+    right: 20px;
+    font-family: 'Glyphicons Halflings';
+    font-size: 0.6em;
+}
 
+.wrapper a[aria-expanded="true"]::before {
+    content: '\e260';
+}
 /* ---------------------------------------------------
     MEDIAQUERIES
 ----------------------------------------------------- */

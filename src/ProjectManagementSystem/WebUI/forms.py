@@ -54,8 +54,8 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("The passwords do not match")
 
 class NewProjectForm(forms.Form):
-    project_title = forms.CharField(max_length=100)
-    project_title.widget.attrs.update({'class' : 'form-control'})
+    name = forms.CharField(max_length=100)
+    name.widget.attrs.update({'class' : 'form-control'})
 
     description = forms.CharField(max_length=100)
     description.widget.attrs.update({'class' : 'form-control'})

@@ -120,6 +120,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
-LOGIN_URL = '/'
-LOGIN_REDIRECT_URL = '/login' #Redirect to this URL whenever it fails the @login_required decorator check
+LOGIN_URL = '/login' #Redirect to this URL whenever it fails the @login_required decorator check
+#LOGIN_REDIRECT_URL = '/login' 
 SESSION_COOKIE_AGE = 259200 #Set the duration for each session to last a maximum of 3 days

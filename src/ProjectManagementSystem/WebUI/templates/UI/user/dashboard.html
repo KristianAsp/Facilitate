@@ -1,21 +1,12 @@
 {%  extends 'UI/base.html' %}
-
 {% block content %}
-
 <div class= "row">
   <div class="col-sm-12">
     <div class="wrapper">
       {% include 'UI/sidebar.html' %}
+      <div style = "background-color: #E0DFD5">
+      </div>
     </div>
   </div>
 </div>
-<script>
-  $(document).ready(function () {
-
-      $('#sidebarCollapse').on('click', function () {
-          $('#sidebar').toggleClass('active');
-      });
-
-  });
-</script>
 {% endblock %}

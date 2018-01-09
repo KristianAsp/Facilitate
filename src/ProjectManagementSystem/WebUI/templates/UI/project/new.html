@@ -3,6 +3,9 @@
 {% block content %}
 <div class= "row new_project">
   <div class ="container">
+    {% if message %}
+      <div class="alert alert-success"><strong>Success!</strong>  {{ message }}</div>
+    {% endif %}
     <div class="heading">
       <h2>Create a new project</h2>
       <p class="heading-description">A project contains all the initial settings needed. Participants can be added manually later or through the automated invitation system.</p>
@@ -15,7 +18,7 @@
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
           <label for="inputName">Project Title</label>
-          {{ form.project_title }}
+          {{ form.name }}
         </div>
       </div>
       <div class="col-md-6 col-xs-12">
