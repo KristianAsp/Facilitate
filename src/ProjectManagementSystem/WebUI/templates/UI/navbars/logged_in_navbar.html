@@ -4,9 +4,10 @@
   </p>
 </li>
 <li class="dropdown">
-  <a class="dropdown-toggle" data-toggle="dropdown" href="#">  <span class="glyphicon glyphicon-user"></span> Account
+  <a class="dropdown-toggle" data-toggle="dropdown" href="#">  <span class="glyphicon glyphicon-user"></span> {{ request.user.username}}
   <span class="caret"></span></a>
   <ul class="dropdown-menu">
+    <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="/profile">Profile</a></li>
     <li><a href="/settings">Settings</a></li>
     <li><a href="/privacy">Privacy</a></li>

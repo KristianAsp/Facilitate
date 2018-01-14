@@ -73,6 +73,9 @@
 .login-dark form .btn-primary:active {
   transform:translateY(1px);
 }
+/********
+NAVBAR
+********/
 
 .navbar {
   background-color: white;
@@ -112,6 +115,7 @@
 
 .new_project {
   margin-top: 3vh;
+  top: 7vh;
 }
 
 .heading h2 {
@@ -174,21 +178,19 @@ body {
     SIDEBAR STYLE
 ----------------------------------------------------- */
 #sidebar {
-    width: 250px;
     position: fixed;
     top: 7vh;
     left: 0;
     height: 93vh;
     z-index: 999;
-    background: #fff;
-    color: #7386D5;
+    background: #7293A0;
+    color: #000;
     transition: all 0.3s;
-    box-shadow: 0px 1px 1px #000;
 }
 
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #fff;
+    background: #7293A0;
 }
 
 #sidebar ul.components {
@@ -197,7 +199,7 @@ body {
 }
 
 #sidebar ul p {
-    color: #7386D5;
+    color: #000;
     padding: 10px;
 }
 
@@ -214,7 +216,7 @@ body {
 .wrapper ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
-    background: #6d7fcc;
+    background: #fff;
 }
 
 
@@ -265,4 +267,16 @@ body {
     #sidebarCollapse span {
         display: none;
     }
+}
+
+.profile {
+  height: calc(100vh - 7vh);
+  padding-left: 4vw;
+  top: 7vh;
+}
+
+
+.tasklist {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }

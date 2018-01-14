@@ -131,6 +131,7 @@ class TicketList(APIView):
         project = Project.objects.get(pk = pk)
         tickets = Ticket.objects.filter(project = project)
         serializer = TicketSerializer(tickets, many=True)
+        pdb.set_trace()
         return Response(serializer.data)
 
     def post(self, request, pk, format=None):

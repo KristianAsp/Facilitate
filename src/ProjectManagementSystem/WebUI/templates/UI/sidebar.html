@@ -1,4 +1,4 @@
-<nav id="sidebar">
+<nav id="sidebar" class ="col-xs-2">
     <div class="sidebar-header">
         <h4>Manage your project</h4>
     </div>
@@ -8,7 +8,9 @@
           <ul class="collapse list-unstyled" id="pageSubmenu">
             {% if projects %}
               {% for project in projects %}
-                <li><a href="#">{{ project.name }}</a></li>
+                <li>
+                  <a href="{% url 'project_index' pk=project.id %}">{{ project.name }}</a>
+                </li>
               {% endfor %}
             {% endif %}
           </ul>
@@ -19,7 +21,7 @@
             <a href="/dashboard/">Dashboard</a>
         </li>
         <li>
-            <a href="/dashboard/tasks/">Tasks</a>
+            <a href="{% url 'dashboard_ticket_view' %}">Tasks</a>
         </li>
         <li>
             <a href="#">Portfolio</a>

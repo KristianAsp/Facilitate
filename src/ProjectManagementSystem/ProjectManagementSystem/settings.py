@@ -14,8 +14,6 @@ SECRET_KEY = '+d&256$q*g_qf)mxf5&t74$gml6=+nak52k(&*&ch@w6bj6n^u'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -29,6 +27,7 @@ INSTALLED_APPS = [
     'WebUI',
     'rest_framework',
     'rest_framework.authtoken',
+    'widget_tweaks',
 ]
 
 REST_FRAMEWORK = {
@@ -121,5 +120,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 LOGIN_URL = '/login' #Redirect to this URL whenever it fails the @login_required decorator check
-#LOGIN_REDIRECT_URL = '/login' 
+#LOGIN_REDIRECT_URL = '/login'
 SESSION_COOKIE_AGE = 259200 #Set the duration for each session to last a maximum of 3 days

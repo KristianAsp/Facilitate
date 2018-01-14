@@ -10,7 +10,7 @@ import hashlib
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, RegisterForm, NewProjectForm
+from .forms import LoginForm, RegisterForm, NewProjectForm, ProfileForm, SettingsForm, NewTicketForm
 from WebAPI.models import Profile
 import pdb
 
@@ -44,19 +44,35 @@ def user_login(request):
 
 @login_required
 def dashboard_index(request):
-    rootURL = API_URL + 'projects/'
+    if request.session['active_project']:
+        return HttpResponseRedirect("/dashboard/" + request.session['active_project'])
 
     # SAMPLE GET REQUEST
     ######
+    data = {'projects' : getProjects(request), }
+    template = loader.get_template('UI/user/dashboard.html')
+    return HttpResponse(template.render(data, request))
+
+@login_required
+def profile_index(request):
+    form = ProfileForm()
+    return render(request, 'UI/user/profile.html', {'form': form})
+
+def getProjects(request):
+    rootURL = API_URL + 'projects/'
+
     data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
     try:
         ro = requests.get(rootURL, headers = data)
-        data = {'projects' : ro.json(), }
+        return ro.json()
     except ValueError:
-        data = {}
-        print('error')
-    template = loader.get_template('UI/user/dashboard.html')
-    return HttpResponse(template.render(data, request))
+        return {}
+
+@login_required
+def settings_index(request):
+    form = SettingsForm()
+    return render(request, 'UI/user/settings.html', {'form': form})
+
 
 def user_register(request):
     form = RegisterForm(request.POST)
@@ -77,6 +93,8 @@ def register_index(request):
         return user_register(request)
 
     if request.method == "GET":
+        if request.user.is_authenticated:
+            return HttpResponseRedirect("/dashboard")
         form = RegisterForm()
         return render(request, 'UI/register.html', {'form': form})
 
@@ -87,6 +105,8 @@ def login_index(request):
         return user_login(request)
 
     if request.method == "GET":
+        if request.user.is_authenticated:
+            return HttpResponseRedirect("/dashboard")
         form = LoginForm()
         return render(request, 'UI/login.html', {'form': form})
 
@@ -120,15 +140,33 @@ def new_project(request):
             return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully created' })
 
 @login_required
-def display_tickets(request, id):
-    rootURL = API_URL + 'projects/tickets/' + id
+def dashboard_project_view(request, pk):
+    rootURL = API_URL + 'projects/tickets/' + pk
+    request.session['active_project'] = pk
+
+    data = {'projects' : getProjects(request), }
+    template = loader.get_template('UI/user/dashboard.html')
+    return HttpResponse(template.render(data, request))
+
+def getTickets(request):
+    rootURL = API_URL + 'tickets/' + request.session['active_project']
 
     data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
     try:
         ro = requests.get(rootURL, headers = data)
-        data = {'tickets' : ro.json(), }
+        return ro.json()
     except ValueError:
-        data = {}
-        print('error')
-    template = loader.get_template('UI/user/dashboard.html')
-    return HttpResponse(template.render(data, request))
+        return {}
+
+@login_required
+def dashboard_ticket_view(request):
+    data = {
+        'projects' : getProjects(request),
+        'tickets' : getTickets(request),
+        }
+    return render(request, 'UI/project/tasklist.html', data)
+
+@login_required
+def new_ticket_view(request):
+    form = NewTicketForm()
+    return render(request, 'UI/project/tickets/new.html', {'form': form})

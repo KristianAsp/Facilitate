@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('name', 'owner')
+        fields = ('id', 'name', 'owner')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
