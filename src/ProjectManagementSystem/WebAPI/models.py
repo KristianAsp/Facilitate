@@ -4,7 +4,7 @@ from rest_framework.authtoken.models import Token
 from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import User
-
+from WebAPI.choices import *
 
 #####
 # use a signal to detect when a user has been created. When it is created, a unique Token should be allocated to this user
@@ -39,24 +39,10 @@ class Ticket(models.Model):
     description = models.TextField()
     project = models.ForeignKey(Project)
 
-    TYPE_CHOICES = (
-        ('S', 'Story'),
-        ('E', 'Epic'),
-        ('B', 'Bug'),
-        ('T', 'Task'),
-    )
-
     type = models.CharField(
         max_length=1,
         choices=TYPE_CHOICES,
         default='T'
-    )
-
-    PRIORITY_CHOICES = (
-        ('C', 'Critical'),
-        ('H', 'High'),
-        ('M', 'Medium'),
-        ('L', 'Low'),
     )
 
     priority = models.CharField(
