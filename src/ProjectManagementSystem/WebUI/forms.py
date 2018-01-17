@@ -62,11 +62,20 @@ class NewProjectForm(forms.Form):
     description.widget.attrs.update({'class' : 'form-control'})
 
 class NewTicketForm(forms.Form):
-    title = forms.CharField(max_length=100)
-    title.widget.attrs.update({'class' : 'form-control'})
+    name = forms.CharField(max_length=100)
+    name.widget.attrs.update({'class' : 'form-control'})
 
     priority = forms.ChoiceField(choices = PRIORITY_CHOICES, widget = forms.Select(), required = True, initial ='')
     priority.widget.attrs.update({'class' : 'form-control'})
+
+    description = forms.CharField(max_length=100)
+    description.widget.attrs.update({'class' : 'form-control'})
+
+    type = forms.ChoiceField(choices = TYPE_CHOICES, widget = forms.Select(), required = True, initial ='')
+    type.widget.attrs.update({'class' : 'form-control'})
+
+    assigned_to = forms.CharField(max_length=100)
+    assigned_to.widget.attrs.update({'class' : 'form-control'})
 
 class ProfileForm(forms.Form):
     username = forms.CharField(max_length=100)

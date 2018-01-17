@@ -12,19 +12,37 @@
     </div>
     <hr></hr>
 
-  <form action="" method="post">
+  <form action="{% url 'new_ticket_view' %}" method="POST">
     {% csrf_token %}
     <div class="row">
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="inputName">Ticket Title</label>
-          {{ form.title }}
+          <label for="inputName">Ticket Name</label>
+          {{ form.name }}
+        </div>
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="form-group">
+          <label for="Severity">Severity</label>
+          {{ form.priority }}
         </div>
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
           <label for="Description">Description</label>
-          {{ form.priority }}
+          {{ form.description }}
+        </div>
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="form-group">
+          <label for="Description">Type</label>
+          {{ form.type }}
+        </div>
+      </div>
+      <div class="col-md-6 col-xs-12">
+        <div class="form-group">
+          <label for="Description">Assignee</label>
+          {{ form.assigned_to }}
         </div>
       </div>
     </div>

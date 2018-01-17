@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.core import serializers as core_serializers
-from .serializers import ProjectSerializer, UserSerializer
+from .serializers import *
 from django.http import HttpResponse, JsonResponse, QueryDict, Http404
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
@@ -131,11 +131,11 @@ class TicketList(APIView):
         project = Project.objects.get(pk = pk)
         tickets = Ticket.objects.filter(project = project)
         serializer = TicketSerializer(tickets, many=True)
-        pdb.set_trace()
         return Response(serializer.data)
 
     def post(self, request, pk, format=None):
-        serializer = UserSerializer(data = request.DATA)
+        serializer = TicketSerializer(data = request.data)
+        pdb.set_trace()
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -155,7 +155,7 @@ class TicketDetail(APIView):
 
     def put(self, request, pk, format=None):
         ticket = self.get_object(pk)
-        serializer = UserSerializer(user, data=request.DATA)
+        serializer = TicketSerializer(ticket, data=request.DATA)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

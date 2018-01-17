@@ -10,7 +10,7 @@ import hashlib
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, RegisterForm, NewProjectForm, ProfileForm, SettingsForm, NewTicketForm
+from .forms import *
 from WebAPI.models import Profile
 import pdb
 
@@ -44,9 +44,11 @@ def user_login(request):
 
 @login_required
 def dashboard_index(request):
-    if request.session['active_project']:
-        return HttpResponseRedirect("/dashboard/" + request.session['active_project'])
-
+    try:
+        if request.session['active_project']:
+            return HttpResponseRedirect("/dashboard/" + request.session['active_project'])
+    except:
+        print("No active project")
     # SAMPLE GET REQUEST
     ######
     data = {'projects' : getProjects(request), }
@@ -149,7 +151,7 @@ def dashboard_project_view(request, pk):
     return HttpResponse(template.render(data, request))
 
 def getTickets(request):
-    rootURL = API_URL + 'tickets/' + request.session['active_project']
+    rootURL = API_URL + 'projects/' + request.session['active_project'] + "/tickets"
 
     data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
     try:
@@ -168,5 +170,17 @@ def dashboard_ticket_view(request):
 
 @login_required
 def new_ticket_view(request):
-    form = NewTicketForm()
-    return render(request, 'UI/project/tickets/new.html', {'form': form})
+    if request.method == "GET":
+        form = NewTicketForm()
+        return render(request, 'UI/project/tickets/new.html', {'form': form})
+    elif request.method == "POST":
+        form = NewTicketForm(request.POST)
+        if form.is_valid():
+            data = { 'Authorization' : 'Token ' + request.session['auth']}
+            rootURL = API_URL + 'projects/' + request.session['active_project'] + "/tickets/"
+            post_fields = form.cleaned_data
+            post_fields['project'] = request.session['active_project']
+            pdb.set_trace()
+            response = requests.post(rootURL, headers = data, data = post_fields)
+            responseJsonParsed = json.dumps(response.text)
+            return render(request, 'UI/project/tickets/new.html', {'form' : form, 'message' : 'The project was successfully created' })

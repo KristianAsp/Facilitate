@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^account/login/$', api_views.LoginUser.as_view()),
     url(r'^account/logout/$', api_views.LogoutUser.as_view()),
     url(r'^account/authenticate/$', api_views.AuthenticateUser.as_view()),
-    url(r'^tickets/(?P<pk>[0-9]+)/$', api_views.TicketList.as_view(), name = 'display_tickets'),
+    url(r'^tickets/(?P<pk>[0-9]+)/$', api_views.TicketDetail.as_view(), name = 'display_tickets'),
+    url(r'^projects/(?P<pk>[0-9]+)/tickets/$', api_views.TicketList.as_view(), name = 'display_tickets'),
     url(r'^get_auth_token/$', rest_framework_views.obtain_auth_token, name = 'get_auth_token'), ##Obtains the valid API Token when a POST request is sent with a valid username and password (hashed)
 ]
