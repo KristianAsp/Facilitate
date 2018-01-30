@@ -1,17 +1,12 @@
-/*********
-Creates and sends an AJAX PUT request to update a specific user and profile.
-**********/
-function updateProduct(){
+function updateStateOfTask(taskID, stateID){
   $.ajax({
     type: 'PUT',
-    url: 'profile_index/',
-    data : {
-      names : $('#updatedName').val(),
-      description : $('#updatedDescription').val(),
-      price : $('#updatedPrice').val()
+    url: '/api/tickets/' + taskID + '/',
+    data: {
+      'state' : stateID,
     },
-    success: handlingFunctionForUpdating,
-    dataType: 'json'
-    })
-    return false;
+    success: {},
+    dataType: 'json',
+  })
+  return false;
 }

@@ -36,23 +36,27 @@ class Profile(models.Model):
 
 class Ticket(models.Model):
     name = models.CharField(max_length=30)
-    description = models.TextField()
+    description = models.TextField(default = "Hello")
     project = models.ForeignKey(Project)
 
     type = models.CharField(
         max_length=1,
         choices=TYPE_CHOICES,
-        default='T'
+        default=TYPE_CHOICES[0][0]
     )
 
     priority = models.CharField(
         max_length=1,
         choices=PRIORITY_CHOICES,
-        default='M',
+        default=PRIORITY_CHOICES[0][0],
     )
 
     assigned_to = models.ForeignKey(User, blank = True, null = True)
-    state = models.CharField(max_length=20,blank = True, null = True)
+    state = models.CharField(
+        max_length=5,
+        choices=STATE_CHOICES,
+        default=STATE_CHOICES[0][0],
+    )
 
     def __str__(self):
         return self.name

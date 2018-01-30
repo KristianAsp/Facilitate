@@ -29,5 +29,12 @@
         <li>
             <a href="#">Stats</a>
         </li>
+        <li>
+          {% if request.session.is_owner %}
+            <button onclick="location.href='{% url 'project_settings' %}';">Settings</button>
+          {% else %}
+            <button disabled>Settings</button>
+          {% endif %}
+        </li>
     </ul>
 </nav>

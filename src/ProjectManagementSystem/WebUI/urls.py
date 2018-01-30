@@ -15,4 +15,5 @@ urlpatterns = [
     url(r'^dashboard/(?P<pk>[0-9]+)$', views.dashboard_project_view, name = 'project_index'),
     url(r'^dashboard/tasks/$', views.dashboard_ticket_view,  name = 'dashboard_ticket_view'),
     url(r'^dashboard/tasks/new$', views.new_ticket_view,  name = 'new_ticket_view'),
+    url(r'^project/settings$', views.new_ticket_view,  name = 'project_settings'),
 ]

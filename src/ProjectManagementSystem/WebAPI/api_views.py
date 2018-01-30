@@ -135,11 +135,11 @@ class TicketList(APIView):
 
     def post(self, request, pk, format=None):
         serializer = TicketSerializer(data = request.data)
-        pdb.set_trace()
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TicketDetail(APIView):
     def get_object(self, pk):
@@ -155,8 +155,8 @@ class TicketDetail(APIView):
 
     def put(self, request, pk, format=None):
         ticket = self.get_object(pk)
-        serializer = TicketSerializer(ticket, data=request.DATA)
-        if serializer.is_valid():
+        serializer = TicketSerializer(ticket, data = request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
