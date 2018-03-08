@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, Ticket
+from .models import Project, Ticket, Profile
 from django.contrib.auth.models import User
 import pdb
 
@@ -7,12 +7,12 @@ import pdb
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('id', 'name', 'owner')
+        fields = ('id', 'name', 'owner', 'visibility')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password')
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,3 +28,8 @@ class TicketSerializer(serializers.ModelSerializer):
         instance.priority = validated_data.get('priority', instance.priority)
         instance.save()
         return instance
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ('user', 'projects', 'joined')

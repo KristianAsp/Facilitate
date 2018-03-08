@@ -227,12 +227,22 @@ button {
   text-align: left;
 }
 
+#search-btn {
+  width: 3em !important;
+}
+
 button:disabled{
   color: gray;
 }
 
 button:disabled:hover{
   color: gray !important;
+  background: none !important;
+}
+
+.disabled, .disabled:hover {
+  color: grey !important;
+  cursor: auto;
   background: none !important;
 }
 
@@ -352,6 +362,9 @@ th {
   vertical-align: bottom;
 }
 
+.unique-ticket {
+  cursor: pointer;
+}
 
 /******
 DRAGULA css

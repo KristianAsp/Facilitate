@@ -8,19 +8,35 @@
         {% include 'UI/sidebar.html' %}
       </div>
       <div class = "col-xs-5 profile" style = "background-color: #fff">
-        <form class="form-horizontal" method="POST" action="">
+        <div id = "label">
+        </div>
+        <form class="form-horizontal" method="POST" action="javascript:updateUser()">
           {% csrf_token %}
           <div class="row">
             <div class="col-md-12">
-              <h3 class="details-header">Your personal details </h3>
+              <h3 class="details-header">
+                {% if request.user.id == user.id %}
+                  Your personal details
+                {% else %}
+                  {{ user.username }}'s personal details
+                {% endif %}
+              </h3>
               {% for field in form.visible_fields %}
                 {% if "password" not in field.html_name %}
               <div class="form-group">
                 <div class="col-sm-4">
-                  <label class="control-label inputLabel" for="first-name">{{ field.name }}</label>
+                  <label class="control-label inputLabel" for="first-name">{{ field.label }}</label>
                 </div>
                 <div class="col-sm-7">
-                  {% render_field field value=field.name %}
+                  {% for key, value in user.items %}
+                    {% if field.name == key %}
+                      {% if request.user.id == user.id %}
+                        {% render_field field value=value %}
+                      {% else %}
+                         <div style="padding-top: 7px">{{ value }}</div>
+                      {% endif %}
+                    {% endif %}
+                  {% endfor %}
                 </div>
               </div>
                 {% endif %}
@@ -28,36 +44,44 @@
               <hr/>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-12">
-              <h3>Password Settings</h3>
-              <p class = "subheading">Update your password</p>
-              {% for field in form.visible_fields %}
-                {% if "password"  in field.html_name %}
-              <div class="form-group">
-                <div class="col-sm-4">
-                  <label class="control-label inputLabel" for="first-name">{{ field.name }}</label>
-                </div>
-                <div class="col-sm-7">
-                  {% render_field field value='********' %}
-                </div>
-              </div>
-                {% endif %}
-              {% endfor %}
-              <hr/>
-                <div class ="form-group">
-                  <div class="col-md-12">
-                    <button onclick="updateUser()" type="button" class="btn btn-default">Update</button>
+          {% if request.user.id == user.id %}
+            <div class="row">
+              <div class="col-md-12">
+                <h3>Password Settings</h3>
+                <p class = "subheading">Update your password</p>
+                {% for field in form.visible_fields %}
+                  {% if "password"  in field.html_name %}
+                <div class="form-group">
+                  <div class="col-sm-4">
+                    <label class="control-label inputLabel" for="first-name">{{ field.label }}</label>
+                  </div>
+                  <div class="col-sm-7">
+                    {% render_field field value='********' %}
                   </div>
                 </div>
-            </div>
-            </div>
+                  {% endif %}
+                {% endfor %}
+                <hr/>
+                  <div class ="form-group">
+                    <div class="col-md-12">
+                      <button onclick="updateUser()" type="button" class="btn btn-default">Update</button>
+                    </div>
+                  </div>
+              </div>
+              </div>
+            {% endif %}
             <hr/>
           </form>
       </div>
       <div class = "col-xs-5 profile" style = "background-color: #fff">
         <div>
-          <h3 class="details-header">Your latest activity </h3>
+          <h3 class="details-header">
+            {% if request.user.id == user.id %}
+              Your latest activity
+            {% else %}
+              {{ user.username }}'s latest activity
+            {% endif %}
+          </h3>
           <div style="overflow-y: scroll; height:72.8vh; width: 90%; background-color: #fff;">
           </div>
         </div>

@@ -84,8 +84,8 @@ class ProfileForm(forms.Form):
     first_name = forms.CharField(max_length=100)
     first_name.widget.attrs.update({'class' : 'form-control'})
 
-    surname = forms.CharField(max_length=100)
-    surname.widget.attrs.update({'class' : 'form-control'})
+    last_name = forms.CharField(max_length=100)
+    last_name.widget.attrs.update({'class' : 'form-control'})
 
     email = forms.EmailField()
     email.widget.attrs.update({'class' : 'form-control'})

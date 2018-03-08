@@ -13,7 +13,7 @@
           {% if tickets %}
             {% for ticket in tickets %}
               {%  if ticket.state == 'BL' %}
-                <div style="background-color: #fff;" id = {{ticket.id}}> {{ ticket.name }} </div>
+                <div class ="unique-ticket" style="background-color: #fff;" id = {{ticket.id}}> {{ ticket.name }} </div>
               {% endif %}
             {% endfor %}
           {% endif %}
@@ -23,7 +23,7 @@
           {% if tickets %}
             {% for ticket in tickets %}
               {%  if ticket.state == 'DEV' %}
-                <div style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
+                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
               {% endif %}
             {% endfor %}
           {% endif %}
@@ -33,7 +33,7 @@
           {% if tickets %}
             {% for ticket in tickets %}
               {%  if ticket.state == 'TEST' %}
-                <div style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
+                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
               {% endif %}
             {% endfor %}
           {% endif %}
@@ -43,13 +43,33 @@
           {% if tickets %}
             {% for ticket in tickets %}
               {%  if ticket.state == 'C' %}
-                <div style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
+                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
               {% endif %}
             {% endfor %}
           {% endif %}
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Modal Header</h4>
+      </div>
+      <div class="modal-body">
+        <p>Some text in the modal.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
   </div>
 </div>
 

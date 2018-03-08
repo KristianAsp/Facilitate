@@ -1,0 +1,89 @@
+{%  extends 'UI/base.html' %}
+{% block content %}
+<div class= "row">
+  <div class="col-xs-12">
+    <div class="wrapper">
+      <div class ="col-xs-2">
+        {% include 'UI/sidebar.html' %}
+      </div>
+      <div class = "col-xs-10 content" style = "background-color: #7293A0">
+        <form class="form-horizontal" method="POST" action="">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-12">
+              <h2 class="details-header">Project Details</h2>
+              {% if error_message %}
+                <div class="alert alert-danger">
+                  <strong>Oops!</strong> {{ error_message }}
+                </div>
+              {% elif message %}
+                <div class="alert alert-success">
+                  <strong>{{ message }}</strong>
+                </div>
+              {% endif  %}
+            </div>
+          </div>
+          <hr/>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="panel panel-default">
+                  <div class="panel-heading">
+                      <h3 class="panel-title">Collaborators</h3>
+                  </div>
+                  <ul class="list-group">
+                    {% if data %}
+                      {% for user in data %}
+                      <div class="list-group-item">
+                        <a href="{% url 'view_user_profile' slug=user.username %}">{{ user.username }}</a>
+
+                        <a style="float: right;" href="#">X</a>
+                      </div>
+                      {% endfor %}
+
+                    {% endif  %}
+                  </ul>
+                  <div class="panel-heading">
+                    <form action="{% url 'user_project_settings' %}" method="post">
+                      <label style="display: block">Search for users by username, full name or email address </label>
+                      <input class="form-control" id="txtUser" name="txtUser" placeholder="Search" style="width:70%; display: inline;"/>
+                      <button type="submit" class="btn btn-default" style="display: inline">Add collaborator</button>
+                    </form>
+                  </div>
+                  <div class="list-group-item" id = "user-search-list">
+                  </div>
+                  <script>
+                  // Get the <datalist> and <input> elements.
+                  var dataList = document.getElementById('datalist');
+                  var input = document.getElementById('txtUser');
+                  function createAutocompleteList(){
+                    $.ajax({
+                      type: 'GET',
+                      url: '/api/users/',
+                      data: {
+                        'name' : $('#txtUser').val,
+                      },
+                      success: addSource,
+                      dataType: 'json',
+                    })
+                    return false;
+                  }
+
+                  function addSource(){
+                    var option = document.createElement('option');
+                    option.value = "Hello";
+                    dataList.appendChild(option);
+                  }
+                  </script>
+              </div>
+            </div>
+          </div>
+          <hr/>
+        </form>
+        <form action= {% url 'delete_project' %} method = "POST">
+          <button type="submit" class="btn btn-default" onclick="return confirm('Are you sure you want to delete the project?')" style="display: inline">Delete Project</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -18,23 +18,16 @@
     </ul>
     <ul class="list-unstyled components">
         <li class="active">
-            <a href="/dashboard/">Dashboard</a>
+          <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='/dashboard/'" {% endif %}>Dashboard</button>
         </li>
         <li>
-            <a href="{% url 'dashboard_ticket_view' %}">Tasks</a>
+          <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='{% url 'dashboard_ticket_view' %}';" {% endif %}>Tasks</button>
         </li>
         <li>
-            <a href="#">Portfolio</a>
+          <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Portfolio</button>
         </li>
         <li>
-            <a href="#">Stats</a>
-        </li>
-        <li>
-          {% if request.session.is_owner %}
-            <button onclick="location.href='{% url 'project_settings' %}';">Settings</button>
-          {% else %}
-            <button disabled>Settings</button>
-          {% endif %}
+          <button {% if request.session.is_owner is Not %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Settings</button>
         </li>
     </ul>
 </nav>

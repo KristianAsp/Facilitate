@@ -8,9 +8,9 @@
   <span class="caret"></span></a>
   <ul class="dropdown-menu">
     <li><a href="/dashboard">Dashboard</a></li>
-    <li><a href="/profile">Profile</a></li>
+    <li><a href="{% url 'view_user_profile' slug=request.user.username %}">Profile</a></li>
     <li><a href="/settings">Settings</a></li>
-    <li><a href="/privacy">Privacy</a></li>
+    <li><a class="disabled" href="#">Privacy</a></li>
     <li><a href="{% url 'user_logout' %}">Sign out</a></li>
   </ul>
 </li>

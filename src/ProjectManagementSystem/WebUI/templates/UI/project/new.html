@@ -31,12 +31,25 @@
     <hr></hr>
     <div class="form-group">
       <div class="radio">
-        <label><input type="radio" name="optradio" checked><strong>Public</strong></label><br><label>Any logged in user can see this project and request to become a participant.</label>
+        <label><input type="radio" id="private" name="private" onchange="valueChanged(this)"><strong>Private</strong></label><br><label>You choose who can see and contribute to this project.</label>
       </div>
       <div class="radio">
-        <label><input type="radio" name="optradio"><strong>Private</strong></label><br><label>You choose who can see and contribute to this project.</label>
+        <label><input type="radio" id="public" name="public" checked onchange="valueChanged(this)"><strong>Public</strong></label><br><label>Any logged in user can see this project and request to become a participant.</label>
       </div>
+
     </div>
+    <script>
+      function valueChanged(element){
+        if(element.id == "private"){
+          var ele = $("#public")
+          ele[0].checked = false
+        }
+        else{
+          var ele = $("#private")
+          ele[0].checked = false
+        }
+      }
+    </script>
     <hr></hr>
     <div class="text-left">
       <button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-saved"></i> Create</button>

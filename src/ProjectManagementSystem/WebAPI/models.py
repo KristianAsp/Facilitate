@@ -19,6 +19,7 @@ def create_authentication_token(sender, instance=None, created=False, **kwargs):
 class Project(models.Model):
     name = models.CharField(max_length=30)
     owner = models.ForeignKey(User)
+    visibility = models.BooleanField(default = False) #True for a public project, false for a private
 
     def __str__(self):
         return self.name
@@ -29,10 +30,10 @@ class Project(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     projects = models.ManyToManyField(Project, blank=True, null=True)
+    joined = models.DateTimeField(auto_now_add=True, blank=True, null = True)
 
     def __str__(self):
         return self.user.username
-
 
 class Ticket(models.Model):
     name = models.CharField(max_length=30)
@@ -60,3 +61,12 @@ class Ticket(models.Model):
 
     def __str__(self):
         return self.name
+
+class Invitation(models.Model):
+    project = models.ForeignKey(Project)
+    user = models.EmailField()
+    invitor = models.ForeignKey(User)
+    issued = models.DateTimeField(auto_now_add=True, blank=True, null = True)
+
+class Activity(models.Model):
+    user = models.ForeignKey(User)
