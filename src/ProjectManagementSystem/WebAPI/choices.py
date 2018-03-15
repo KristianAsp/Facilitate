@@ -19,3 +19,9 @@ STATE_CHOICES = (
     ('TEST', 'In Testing'),
     ('C', 'Completed'),
 )
+
+ACTIVITY_CHOICES = (
+    ('U', 'Update'),
+    ('CO', 'Comment'),
+    ('CR', 'Create'), 
+)

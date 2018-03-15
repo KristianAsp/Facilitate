@@ -43,7 +43,9 @@
           {% if tickets %}
             {% for ticket in tickets %}
               {%  if ticket.state == 'C' %}
-                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
+                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}>
+                  <a href="#"> {{ ticket.name }} </a>
+                </div>
               {% endif %}
             {% endfor %}
           {% endif %}
@@ -55,21 +57,24 @@
 
 <div id="myModal" class="modal fade" role="dialog">
   <div class="modal-dialog">
-
     <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <button style="width: 1em;" type="button" class="close cancelUpdate" data-dismiss="modal">&times;</button>
         <h4 class="modal-title">Modal Header</h4>
       </div>
       <div class="modal-body">
-        <p>Some text in the modal.</p>
+        <form action="#">
+          <div class="ui-widget" style="width:300px;">
+            <input id="myInput" type="text" name="myCountry" placeholder="Assigned to">
+          </div>
+        </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default cancelUpdate" data-dismiss="modal">Cancel</button>
+        <button id="update" type="button" class="btn btn-primary" onclick="updateClubdays(this)">Update</button>
       </div>
     </div>
-
   </div>
 </div>
 

@@ -1,4 +1,5 @@
 .login-dark {
+  top: 6vh;
   height: 94vh;
   background-color:#475d62;
   background-size:cover;
@@ -390,4 +391,21 @@ DRAGULA css
   opacity: 0.2;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
   filter: alpha(opacity=20);
+}
+.ui-autocomplete {
+  z-index:2147483647;
+}
+
+
+.search {
+  padding-top: 10vh;
+}
+
+#search-results h3 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.content {
+  background-color: #dddfe0;
 }

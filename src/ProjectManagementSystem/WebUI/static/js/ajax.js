@@ -1,9 +1,4 @@
 
-function displayModal(taskID, stateID){
-  $('#myModal').modal('show');
-  updateStateOfTask(taskID, stateID);
-}
-
 function updateStateOfTask(taskID, stateID){
   $.ajax({
     type: 'PUT',
@@ -12,6 +7,19 @@ function updateStateOfTask(taskID, stateID){
       'state' : stateID,
     },
     success: {},
+    dataType: 'json',
+  })
+  return false;
+}
+
+function fetchUsersForProject(){
+  $.ajax({
+    type: 'GET',
+    url: '/project/settings/users',
+    data: {},
+    success: function(data){
+      availableTags = data;
+    },
     dataType: 'json',
   })
   return false;

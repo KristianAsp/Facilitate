@@ -3,18 +3,21 @@ from django.template import loader
 from django.http import HttpResponse, JsonResponse, QueryDict, HttpResponseRedirect, HttpResponseBadRequest, Http404
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string, get_template
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+from django.core.mail import EmailMessage
 import requests, json
 import hashlib
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from .forms import *
-from WebAPI.models import Profile
-import pdb, re
 from django_tables2 import RequestConfig
 from .tables import TicketTable
+from .forms import *
+from WebAPI.models import Profile
+from WebAPI.models import Invitation, Project, Profile
+import pdb, re, uuid
 
 API_URL = 'http://127.0.0.1:8000/api/'
 
@@ -29,7 +32,6 @@ def get_auth_token(request, username, password):
     data_json = r.json()
     request.session['auth'] = data_json['token']
 
-@csrf_exempt
 def user_login(request):
     form = LoginForm(request.POST)
 
@@ -101,6 +103,12 @@ def user_register(request):
         user.set_password(form.cleaned_data.get('password'))
         user.save()
         profile = Profile(user = user)
+        invitations = Invitation.objects.filter(user = user.email)
+
+        profile.save()
+        for invitation in invitations:
+            profile.projects.add(invitation.project)
+
         profile.save()
         login(request, user)
         get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
@@ -248,6 +256,7 @@ def project_settings_view(request):
     elif request.method == "POST":
         return user_project_settings(request)
 
+@login_required
 def user_project_settings(request):
     if request.method == "POST":
         error_message = None
@@ -266,6 +275,7 @@ def user_project_settings(request):
                 projects.append(int(request.session['active_project']))
                 responseJsonParsed['projects'] = projects
                 response = requests.put(rootURL, headers = data, data = responseJsonParsed)
+                request.session['message'] =  request.POST['txtUser'] + ' was successfully added to the project.'
             else:
                 error_message = "This user is already a collaborator on this project!"
                 request.session['error_message'] = error_message
@@ -273,15 +283,34 @@ def user_project_settings(request):
             print ("Need to send an email now")
             error_message = "No user with that name."
             request.session['error_message'] = error_message
-            EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+"
+            EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+" # Move this to a file to contain all REGEXs
             if re.match(EMAIL_REGEX, request.POST['txtUser']): ##If the non-existant user is an email address, send an invitation by email to use the software.
+
+                createInvitation(request.user, request.POST['txtUser'], request.session['active_project'])
                 message = "An invitation has been sent to this email address."
                 request.session['message'] = message
                 del request.session['error_message']
-        except (PermissionDenied):
+        except PermissionDenied:
             error_message = "You are not allowed to do that."
             request.session['error_message'] = error_message
         return HttpResponseRedirect('/project/settings')
+    elif request.method == "GET":
+        data = getUsersForProject(request, request.session['active_project'])
+        data_arr = []
+        for user in data:
+            data_arr.append(user['username'])
+        return JsonResponse(data_arr, safe=False)
+
+
+def createInvitation(user, email, project):
+    try:
+        invitation = Invitation.objects.get(project = project, user = email)
+        print("An invitation for this user already exist")
+    except Invitation.DoesNotExist:
+        project = Project.objects.get(id = project)
+        invitation = Invitation(project = project, user = email, invitor = user)
+        invitation.save()
+        print("Created an invitation")
 
 def view_user_profile(request, slug):
     responseJsonParsed = None
@@ -307,17 +336,73 @@ def search(request):
     return render(request, 'UI/search/search.html')
 
 def filterUsers(request, query):
-    rootURL = API_URL + 'users/search/'
-    data = { 'Authorization' : 'Token ' + request.session['auth']}
-    response = requests.get(rootURL, headers = data)
-    return None;
+    list_of_query_words = query.split(" ")
+    filteredUsers = []
+    for word in list_of_query_words:
+        filteredUsers += User.objects.filter(username__icontains = word)
+    return filteredUsers;
 
 def filterProjects(request, query):
-    rootURL = API_URL + 'projects/search/'
-    data = { 'Authorization' : 'Token ' + request.session['auth']}
-    response = requests.get(rootURL, headers = data)
-    return None;
+    list_of_query_words = query.split(" ")
+    filteredProjects = []
+    for word in list_of_query_words:
+        filteredProjects += Project.objects.filter(name__icontains = word, visibility = True)
+    return filteredProjects;
 
 def handler404(request):
     response = render(request, 'UI/login.html', status=404)
     return response
+
+def remove_user_from_project(request, slug):
+    user = User.objects.get(username = slug)
+    profile = Profile.objects.get(user = user)
+    project = Project.objects.get(id = request.session['active_project'])
+    profile.projects.remove(project)
+    request.session['message'] =  user.username + ' was successfully removed from the project.'
+    return HttpResponseRedirect('/project/settings')
+
+def forgotten_password(request):
+    if request.method == "GET":
+        return render(request, 'UI/forgotten_password.html')
+    elif request.method == "POST":
+        email = request.POST['email']
+        try:
+            user = User.objects.get(email = email)
+        except User.DoesNotExist:
+            return render(request, 'UI/forgotten_password.html', {'error' : 'We could not find a user with that email address. Please try again'})
+
+        user.set_unusable_password()
+        user.save()
+        profile = Profile.objects.get(user = user)
+        profile.reset_password_hash = uuid.uuid1().hex
+        profile.save()
+        send_email('UI/email/reset_password.html', ['kristian.aspevik@gmail.com'], 'Reset Password', slug = profile.reset_password_hash, )
+        return render(request, 'UI/forgotten_password.html', {'message' : 'An email has been sent to ' + email})
+
+def reset_password(request, slug):
+    if request.method == "GET":
+        try:
+            profile = Profile.objects.get(reset_password_hash = slug)
+            user = User.objects.get(profile = profile)
+        except (Profile.DoesNotExist, User.DoesNotExist):
+            raise Http404
+        return render(request, 'UI/reset_password.html', {'slug' : slug})
+    elif request.method == "POST":
+        try:
+            profile = Profile.objects.get(reset_password_hash = slug)
+            user = User.objects.get(profile = profile)
+        except (Profile.DoesNotExist, User.DoesNotExist):
+            raise Http404
+
+        new_pass = request.POST.get('password')
+        user.set_password(new_pass)
+        user.save()
+        profile.reset_password_hash = None
+        profile.save()
+        return render(request, 'UI/reset_password.html', {'message' : 'Success', 'slug' : slug})
+
+def send_email(template, recipients, subject, **kwargs):
+    message = get_template(template).render(kwargs)
+    email = EmailMessage(subject, message, to=recipients)
+    email.content_subtype = 'html'
+    email.send()

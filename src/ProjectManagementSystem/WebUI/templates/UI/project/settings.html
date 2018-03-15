@@ -6,7 +6,7 @@
       <div class ="col-xs-2">
         {% include 'UI/sidebar.html' %}
       </div>
-      <div class = "col-xs-10 content" style = "background-color: #7293A0">
+      <div class = "col-xs-10 content">
         <form class="form-horizontal" method="POST" action="">
           {% csrf_token %}
           <div class="row">
@@ -36,7 +36,7 @@
                       <div class="list-group-item">
                         <a href="{% url 'view_user_profile' slug=user.username %}">{{ user.username }}</a>
 
-                        <a style="float: right;" href="#">X</a>
+                        <a style="float: right;" href="{% url 'remove_user_from_project' slug=user.username %}">X</a>
                       </div>
                       {% endfor %}
 

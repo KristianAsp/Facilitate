@@ -31,6 +31,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     projects = models.ManyToManyField(Project, blank=True, null=True)
     joined = models.DateTimeField(auto_now_add=True, blank=True, null = True)
+    reset_password_hash = models.CharField(max_length = 50, blank = True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -38,7 +39,7 @@ class Profile(models.Model):
 class Ticket(models.Model):
     name = models.CharField(max_length=30)
     description = models.TextField(default = "Hello")
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     type = models.CharField(
         max_length=1,
@@ -63,10 +64,16 @@ class Ticket(models.Model):
         return self.name
 
 class Invitation(models.Model):
-    project = models.ForeignKey(Project)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     user = models.EmailField()
     invitor = models.ForeignKey(User)
     issued = models.DateTimeField(auto_now_add=True, blank=True, null = True)
 
 class Activity(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    action = models.CharField(
+        max_length = 10,
+        choices = ACTIVITY_CHOICES,
+        default = ACTIVITY_CHOICES[0][0],
+    )
+    item = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True)

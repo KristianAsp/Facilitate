@@ -27,7 +27,7 @@
           <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Portfolio</button>
         </li>
         <li>
-          <button {% if request.session.is_owner is Not %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Settings</button>
+          <button {% if not request.session.is_owner %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Settings</button>
         </li>
     </ul>
 </nav>
