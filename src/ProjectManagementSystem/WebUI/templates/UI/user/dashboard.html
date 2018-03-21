@@ -6,50 +6,40 @@
       {% include 'UI/sidebar.html' %}
     </div>
     <div class = "col-xs-10 content ticketcolumns" style = "background-color: #E0DFD5">
-      <div class ="row">
+      <div class="row">
+        <div class="dropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Boards
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="#">Default</a></li>
+            <li><a href="#">Kristian's Dev Board</a></li>
+          </ul>
+        </div>
+        <button class="btn btn-primary" type="button" onclick="displayStateButtons()">Edit Board</button>
+      </div>
+      <div class ="row state-row">
       <!--Draggable DIV:-->
-        <div class="col-xs-3 container ticket-column" id="BL">
-          <h3> In the backlog</h3>
-          {% if tickets %}
-            {% for ticket in tickets %}
-              {%  if ticket.state == 'BL' %}
-                <div class ="unique-ticket" style="background-color: #fff;" id = {{ticket.id}}> {{ ticket.name }} </div>
-              {% endif %}
-            {% endfor %}
-          {% endif %}
+      {% if states %}
+        {% for state in states %}
+        <div class="col-xs-3 container ticket-column" id="{{ state.short_name }}">
+          <div class="row">
+            <button hidden="hidden" id="edit_{{state.short_name}}" class="editBtn-State" type="button">Delete</button>
+            <button id="delete{{state.short_name}}" class="deleteBtn-State" type="button">Edit</button>
+          </div>
+          <div class="row">
+            <h3> {{ state.name }}</h3>
+            {% if tickets %}
+              {% for ticket in tickets %}
+                {%  if ticket.state == state.short_name %}
+                  <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
         </div>
-        <div class="col-xs-3 container ticket-column" id="DEV">
-          <h3> In Development</h3>
-          {% if tickets %}
-            {% for ticket in tickets %}
-              {%  if ticket.state == 'DEV' %}
-                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        </div>
-        <div class="col-xs-3 container ticket-column" id="TEST">
-          <h3> Ready for testing</h3>
-          {% if tickets %}
-            {% for ticket in tickets %}
-              {%  if ticket.state == 'TEST' %}
-                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}> {{ ticket.name }} </div>
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        </div>
-        <div class="col-xs-3 container ticket-column" id="C">
-          <h3> Completed</h3>
-          {% if tickets %}
-            {% for ticket in tickets %}
-              {%  if ticket.state == 'C' %}
-                <div class ="unique-ticket" style="background-color: #fff;" id = {{ ticket.id }}>
-                  <a href="#"> {{ ticket.name }} </a>
-                </div>
-              {% endif %}
-            {% endfor %}
-          {% endif %}
-        </div>
+        {% endfor %}
+      {% endif %}
       </div>
     </div>
   </div>

@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^project/settings/users$', views.user_project_settings, name = 'user_project_settings'),
     url(r'^project/users/delete/(?P<slug>[\w_-]+)/$', views.remove_user_from_project, name = 'remove_user_from_project'),
     url(r'^project/delete$', views.delete_project, name = 'delete_project'),
+    url(r'^project/tickets/detail/(?P<slug>[ \w_-]+)/$', views.ticket_detail, name = 'ticket_detail'),
     url(r'^(?P<slug>[\w_-]+)/$', views.view_user_profile, name = 'view_user_profile'),
     url(r'^search$', views.search, name = "search"),
 ]

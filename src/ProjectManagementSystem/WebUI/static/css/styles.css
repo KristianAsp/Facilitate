@@ -115,8 +115,7 @@ NAVBAR
 }
 
 .new_project {
-  margin-top: 3vh;
-  top: 7vh;
+  margin-top: 4vh;
 }
 
 .heading h2 {
@@ -137,6 +136,7 @@ NAVBAR
 body {
     font-family: 'Poppins', sans-serif;
     background: #fafafa;
+    margin-bottom: 60px;
 }
 
 .wrapper p {
@@ -396,7 +396,6 @@ DRAGULA css
   z-index:2147483647;
 }
 
-
 .search {
   padding-top: 10vh;
 }
@@ -408,4 +407,25 @@ DRAGULA css
 
 .content {
   background-color: #dddfe0;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+
+.state-row {
+  margin-top: 10vh;
+}
+
+.ticketcolumns .row button {
+
+}
+
+.editBtn-State, .deleteBtn-State {
+  display: none;
 }

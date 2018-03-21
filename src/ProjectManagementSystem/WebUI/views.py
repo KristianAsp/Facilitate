@@ -15,8 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django_tables2 import RequestConfig
 from .tables import TicketTable
 from .forms import *
-from WebAPI.models import Profile
-from WebAPI.models import Invitation, Project, Profile
+from WebAPI.models import *
 import pdb, re, uuid
 
 API_URL = 'http://127.0.0.1:8000/api/'
@@ -166,6 +165,8 @@ def new_project(request):
                 post_fields['visibility'] = True
             response = requests.post(rootURL, headers = data, data = post_fields)
             responseJsonParsed = json.dumps(response.text)
+            if 'active_project' not in request.session:
+                request.session['active_project'] = json.loads(response.text)['id']
             return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully created' })
 
 @csrf_exempt
@@ -184,13 +185,20 @@ def delete_project(request):
 def dashboard_project_view(request, pk):
     rootURL = API_URL + 'projects/tickets/' + pk
     request.session['active_project'] = pk
+    if 'active_board' not in request.session:
+        request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session['active_project']), default = True).id
     project = getSingleProject(request, pk);
-    request.session['is_owner'] = project['owner'] == request.user.id
+    try:
+        request.session['is_owner'] = project['owner'] == request.user.id
+    except KeyError:
+        request.session['is_owner'] = False
 
     data = {
             'projects' : getProjects(request),
             'tickets' : getTickets(request),
+            'states' : getStates(request),
             }
+
     template = loader.get_template('UI/user/dashboard.html')
     return HttpResponse(template.render(data, request))
 
@@ -204,12 +212,19 @@ def getTickets(request):
     except ValueError:
         return {}
 
+def getStates(request):
+    if 'active_project' in request.session:
+        board = request.session['active_board']
+        board_object = Board.objects.get(id = board)
+        states = State.objects.filter(board = board_object)
+        return states
+    return None
+
 @login_required
 def dashboard_ticket_view(request):
     tickets = getTickets(request)
 
-    table = TicketTable(tickets)
-    RequestConfig(request).configure(table)
+    table = TicketTable(tickets, request = request)
     data = {
         'projects' : getProjects(request),
         'tickets' : getTickets(request),
@@ -234,7 +249,7 @@ def new_ticket_view(request):
             return render(request, 'UI/project/tickets/new.html', {'form' : form, 'message' : 'The project was successfully created' })
 
 def getUsersForProject(request, project_id):
-    rootURL = API_URL + 'projects/' + project_id + '/users/all'
+    rootURL = API_URL + 'projects/' + str(project_id) + '/users/all'
     data = { 'Authorization' : 'Token ' + request.session['auth']}
     response = requests.get(rootURL, headers = data)
     responseJsonParsed = json.loads(response.text)
@@ -271,7 +286,7 @@ def user_project_settings(request):
             responseJsonParsed = json.loads(response.text)
             projects = responseJsonParsed['projects']
 
-            if int(request.session['active_project']) not in projects:
+            if request.session['active_project'] not in projects:
                 projects.append(int(request.session['active_project']))
                 responseJsonParsed['projects'] = projects
                 response = requests.put(rootURL, headers = data, data = responseJsonParsed)
@@ -295,12 +310,12 @@ def user_project_settings(request):
             request.session['error_message'] = error_message
         return HttpResponseRedirect('/project/settings')
     elif request.method == "GET":
-        data = getUsersForProject(request, request.session['active_project'])
         data_arr = []
-        for user in data:
-            data_arr.append(user['username'])
+        if 'active_project' in request.session:
+            data = getUsersForProject(request, request.session['active_project'])
+            for user in data:
+                data_arr.append(user['username'])
         return JsonResponse(data_arr, safe=False)
-
 
 def createInvitation(user, email, project):
     try:
@@ -371,8 +386,6 @@ def forgotten_password(request):
         except User.DoesNotExist:
             return render(request, 'UI/forgotten_password.html', {'error' : 'We could not find a user with that email address. Please try again'})
 
-        user.set_unusable_password()
-        user.save()
         profile = Profile.objects.get(user = user)
         profile.reset_password_hash = uuid.uuid1().hex
         profile.save()
@@ -406,3 +419,6 @@ def send_email(template, recipients, subject, **kwargs):
     email = EmailMessage(subject, message, to=recipients)
     email.content_subtype = 'html'
     email.send()
+
+def ticket_detail(request, slug):
+    return render(request, 'UI/project/tickets/detail_view.html')

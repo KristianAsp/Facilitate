@@ -18,6 +18,7 @@ def create_authentication_token(sender, instance=None, created=False, **kwargs):
 
 class Project(models.Model):
     name = models.CharField(max_length=30)
+    short_name = models.CharField(max_length=30, null = True, blank = True)
     owner = models.ForeignKey(User)
     visibility = models.BooleanField(default = False) #True for a public project, false for a private
 
@@ -26,6 +27,23 @@ class Project(models.Model):
 
     class Meta:
         ordering = ('name',)
+
+    def save(self, *args, **kwargs):
+        if not self.short_name:
+            self.short_name = self.name[0:2].upper()
+        super(Project, self).save(*args, **kwargs)
+
+class Board(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    default = models.BooleanField(default=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    title = models.CharField(max_length=40)
+
+class State(models.Model):
+    name = models.CharField(max_length=30)
+    short_name = models.CharField(max_length = 5)
+    order = models.IntegerField()
+    board = models.ForeignKey(Board, on_delete=models.CASCADE)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -38,6 +56,7 @@ class Profile(models.Model):
 
 class Ticket(models.Model):
     name = models.CharField(max_length=30)
+    short_name = models.CharField(max_length=30, blank = True, null = True)
     description = models.TextField(default = "Hello")
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
@@ -63,6 +82,12 @@ class Ticket(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        super(Ticket, self).save(*args, **kwargs)
+        if not self.short_name:
+            self.short_name = self.project.short_name + str(self.id)
+            self.save()
+
 class Invitation(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     user = models.EmailField()
@@ -76,4 +101,29 @@ class Activity(models.Model):
         choices = ACTIVITY_CHOICES,
         default = ACTIVITY_CHOICES[0][0],
     )
+
     item = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True)
+
+
+
+@receiver(post_save, sender=Board)
+def create_states_for_board(sender, instance=None, created=False, **kwargs):
+    if created:
+        if instance.default == False:
+            default_board = Board.objects.get(project = instance.project, default=True)
+            for state in default_board.states.all():
+                state.board = instance
+                state.save()
+
+
+
+@receiver(post_save, sender=Project)
+def create_default_board_for_project(sender, instance=None, created=False, **kwargs):
+    if created:
+        board = Board(owner=instance.owner, default=True, project=instance, title=instance.name)
+        board.save()
+        count = 1
+        for k, v in STATE_CHOICES:
+            state = State(name = v, short_name = k, order = count, board = board)
+            state.save()
+            count += 1
