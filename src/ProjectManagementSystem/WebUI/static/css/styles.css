@@ -224,7 +224,7 @@ button {
   border-color: transparent;
   border-style: none;
   background-color: transparent;
-  width: 210px !important;
+
   text-align: left;
 }
 
@@ -352,19 +352,42 @@ th {
 
 .ticket-column {
   position: relative;
-  margin-left: 1em;
-  margin-right: 1em;
-  height: 30em;
-  background-color: #f1f1f1;
-  border: 1px solid #d3d3d3;
+  min-height: 30em;
+  padding-right: unset;
+  padding-left: unset;
+  background-color: #fff;
   text-align: center;
   float:none;
   display: inline-block;
-  vertical-align: bottom;
+  vertical-align: top;
+  padding-bottom: 2vh;
 }
 
+.ticket-headers-bottom {
+  margin-left: 0.2em;
+  text-align: center;
+}
+
+.ticket-headers {
+  text-align: center;
+}
+
+.ticket-headers h5, .ticket-headers-bottom h5{
+  margin-top: unset;
+  margin-bottom: unset;
+  line-height: 2.4em;
+}
 .unique-ticket {
   cursor: pointer;
+  background-color: #fff;
+  margin-left: 2vh;
+  margin-right: 2vh;
+  margin-top: 2vh;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.unique-ticket:hover {
+  background-color: #F0F8FF !important;
 }
 
 /******
@@ -407,6 +430,7 @@ DRAGULA css
 
 .content {
   background-color: #dddfe0;
+  padding-bottom: 5vh;
 }
 
 footer {
@@ -419,13 +443,45 @@ footer {
 }
 
 .state-row {
-  margin-top: 10vh;
+  margin-top: 5vh;
+  display: inline-flex;
 }
 
-.ticketcolumns .row button {
-
-}
-
-.editBtn-State, .deleteBtn-State {
+.editBtn-State, .deleteBtn-State, .editState-row {
   display: none;
+}
+
+.displayStateEditButtons {
+  display: inline-block;
+}
+
+.ticket-header{
+  height: 4vh;
+  background-color: slategrey;
+  margin: 0;
+}
+
+.Critical .ticket-header {
+  background-color: red;
+}
+
+.High .ticket-header {
+  background-color: lavender;
+}
+
+.Medium .ticket-header {
+  background-color: #8CD1E6;
+}
+
+.ticket-body {
+  height: 7vh;
+  margin: 0px;
+}
+
+.ticketcolumns .row {
+  margin-right: unset;
+}
+
+.editState-row {
+  margin-top: 0.7em;
 }

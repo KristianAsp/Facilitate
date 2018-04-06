@@ -2,35 +2,39 @@
 var x = document.getElementsByClassName("ticket-column");
 var availableTags = fetchUsersForProject()
 
-dragula(Array.from(x))
+dragula(Array.from(x), {
+          moves: function(el, container, handle){
+            var res = $(el).is('.unique-ticket')
+            return res
+          }
+        })
         .on('drop', function (el, target, source) {
+          if(target.id == "BL"){
+            updateStateOfTask(el.id, target.id)
+            return
+          }
+          var cancel = false;
+          //$('#myModal').on('shown.bs.modal', function(){
+          //  $("#myInput").autocomplete({
+          //    source: availableTags,
+          //  });
+          //  return;
+          //});
 
-          var btn = $("#myInput")
-
-          $('#myModal').on('shown.bs.modal', function(){
-            $("#myInput").autocomplete({
-              source: availableTags,
-            });
-          });
-          $(".cancelUpdate").click(function(){
+          $("#cancelUpdate").click(function(){
+            target.removeChild(el);
             source.appendChild(el);
-            return;
+            cancel = true;
           });
 
           $("#update").click(function(){
-            var result = validateUpdate()
-            if(result == false){
-              return;
-            }
-            else{
+            if(!cancel){
+              updateStateOfTask(el.id, target.id);
               $('#myModal').modal('hide');
-              updateStateOfTask(el.id, target.id)
             }
           });
-          if(target.id != "BL"){
-            $('#myModal').modal('show');
 
-          }
+          $('#myModal').modal('show');
          });
 
 function lol(id) {

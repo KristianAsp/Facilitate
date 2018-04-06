@@ -1,15 +1,23 @@
+var updating = false;
 
 function updateStateOfTask(taskID, stateID){
-  $.ajax({
-    type: 'PUT',
-    url: '/api/tickets/' + taskID + '/',
-    data: {
-      'state' : stateID,
-    },
-    success: {},
-    dataType: 'json',
-  })
-  return false;
+
+
+    updating = true
+    $.ajax({
+      type: 'PUT',
+      url: '/api/tickets/' + taskID + '/',
+      data: {
+        'state' : stateID,
+      },
+      success: function(){
+        updating = false;
+      },
+      dataType: 'json',
+    })
+    return false;
+
+
 }
 
 function fetchUsersForProject(){

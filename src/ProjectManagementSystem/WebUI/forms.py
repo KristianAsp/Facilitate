@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from WebAPI.choices import *
+from WebAPI.models import *
 import re
 
 class LoginForm(forms.Form):
@@ -54,27 +55,31 @@ class RegisterForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("The passwords do not match")
 
-class NewProjectForm(forms.Form):
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ['name', 'short_name', 'visibility']
+
     name = forms.CharField(max_length=100)
     name.widget.attrs.update({'class' : 'form-control'})
 
-    description = forms.CharField(max_length=100)
-    description.widget.attrs.update({'class' : 'form-control'})
+    short_name = forms.CharField(max_length=100)
+    short_name.widget.attrs.update({'class' : 'form-control'})
 
 class NewTicketForm(forms.Form):
-    name = forms.CharField(max_length=100)
+    name = forms.CharField(max_length=100, required = True)
     name.widget.attrs.update({'class' : 'form-control'})
 
     priority = forms.ChoiceField(choices = PRIORITY_CHOICES, widget = forms.Select(), required = True, initial ='')
     priority.widget.attrs.update({'class' : 'form-control'})
 
-    description = forms.CharField(max_length=100)
+    description = forms.CharField(max_length=100, required = False)
     description.widget.attrs.update({'class' : 'form-control'})
 
     type = forms.ChoiceField(choices = TYPE_CHOICES, widget = forms.Select(), required = True, initial ='')
     type.widget.attrs.update({'class' : 'form-control'})
 
-    assigned_to = forms.CharField(max_length=100)
+    assigned_to = forms.CharField(max_length=100, required = False)
     assigned_to.widget.attrs.update({'class' : 'form-control'})
 
 class ProfileForm(forms.Form):

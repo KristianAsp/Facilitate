@@ -6,10 +6,10 @@ TYPE_CHOICES = (
 )
 
 PRIORITY_CHOICES = (
-    ('C', 'Critical'),
-    ('H', 'High'),
-    ('M', 'Medium'),
-    ('L', 'Low'),
+    ('1', 'Critical'),
+    ('2', 'High'),
+    ('3', 'Medium'),
+    ('4', 'Low'),
 )
 
 STATE_CHOICES = (
@@ -23,5 +23,5 @@ STATE_CHOICES = (
 ACTIVITY_CHOICES = (
     ('U', 'Update'),
     ('CO', 'Comment'),
-    ('CR', 'Create'), 
+    ('CR', 'Create'),
 )

@@ -6,6 +6,9 @@
     {% if message %}
       <div class="alert alert-success"><strong>Success!</strong>  {{ message }}</div>
     {% endif %}
+    {% if warning %}
+      <div class="alert alert-danger"><strong>Something went wrong!</strong>  {{ warning }}</div>
+    {% endif %}
     <div class="heading">
       <h2>Create a new ticket</h2>
       <p class="heading-description">A project contains all the initial settings needed. Participants can be added manually later or through the automated invitation system.</p>
@@ -23,7 +26,7 @@
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="Severity">Severity</label>
+          <label for="Priority">Priority</label>
           {{ form.priority }}
         </div>
       </div>

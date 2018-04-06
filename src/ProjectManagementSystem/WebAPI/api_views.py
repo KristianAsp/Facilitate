@@ -18,6 +18,8 @@ from rest_framework.renderers import JSONRenderer
 from .models import Project, Ticket, Profile
 import json, pdb
 
+
+
 class AuthenticateUser(APIView):
     def get(self, request):
         user = authenticate(request, username = request.POST.get("username"), password = request.POST.get("password"))

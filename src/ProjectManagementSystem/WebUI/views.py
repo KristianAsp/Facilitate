@@ -19,10 +19,12 @@ from WebAPI.models import *
 import pdb, re, uuid
 
 API_URL = 'http://127.0.0.1:8000/api/'
+ACTIVE_PROJECT_ACCESSOR = 'active_project'
 
 ######
 # Obtain authentication token from API
 ######
+
 def get_auth_token(request, username, password):
     URL = API_URL + 'get_auth_token/'
     data = dict(username = username, password = password)
@@ -47,20 +49,17 @@ def user_login(request):
 
 @login_required
 def dashboard_index(request):
-    data = {'projects' : getProjects(request), }
+    data = {'projects' : getProjects(request),}
     try:
-        if request.session['active_project']:
-            return HttpResponseRedirect("/dashboard/" + request.session['active_project'])
+        if request.session[ACTIVE_PROJECT_ACCESSOR]:
+            return HttpResponseRedirect("/dashboard/" + request.session[ACTIVE_PROJECT_ACCESSOR])
     except:
         try:
-            request.session['active_project'] = str(data['projects'][0]['id'])
-            return HttpResponseRedirect("/dashboard/" + request.session['active_project'])
+            request.session[ACTIVE_PROJECT_ACCESSOR] = str(data['projects'][0]['id'])
+            return HttpResponseRedirect("/dashboard/" + request.session[ACTIVE_PROJECT_ACCESSOR])
         except:
             template = loader.get_template('UI/user/dashboard.html')
             return HttpResponse(template.render(data, request))
-
-    template = loader.get_template('UI/user/dashboard.html')
-    return HttpResponse(template.render(data, request))
 
 @login_required
 def profile_index(request):
@@ -151,42 +150,44 @@ def index(request):
 @login_required
 def new_project(request):
     if request.method == "GET":
-        form = NewProjectForm()
+        form = ProjectForm()
         return render(request, 'UI/project/new.html', {'form' : form})
 
     if request.method == "POST":
-        form = NewProjectForm(request.POST)
-
+        form = ProjectForm(request.POST)
         if form.is_valid():
-            data = { 'Authorization' : 'Token ' + request.session['auth']}
-            rootURL = 'http://127.0.0.1:8000/api/projects/'
-            post_fields = form.cleaned_data
-            if(request.POST['public']):
-                post_fields['visibility'] = True
-            response = requests.post(rootURL, headers = data, data = post_fields)
-            responseJsonParsed = json.dumps(response.text)
-            if 'active_project' not in request.session:
-                request.session['active_project'] = json.loads(response.text)['id']
+            project = form.save(commit=False)
+            project.owner = request.user
+            project.visibility == 'public' in request.POST
+            project.save()
+
+            profile = Profile.objects.get(user = request.user)
+            profile.projects.add(project)
+
+            if ACTIVE_PROJECT_ACCESSOR not in request.session:
+                request.session[ACTIVE_PROJECT_ACCESSOR] = project.pk
+
             return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully created' })
 
 @csrf_exempt
 def delete_project(request):
     if request.method == "POST":
         data = { 'Authorization' : 'Token ' + request.session['auth']}
-        project = request.session['active_project']
-        del request.session['active_project']
+        project = request.session[ACTIVE_PROJECT_ACCESSOR]
+        del request.session[ACTIVE_PROJECT_ACCESSOR]
+        del request.session['active_board']
         rootURL = 'http://127.0.0.1:8000/api/projects/' + project
         response = requests.delete(rootURL, headers = data)
         responseJsonParsed = json.dumps(response.text)
-        form = NewProjectForm()
+        form = ProjectForm()
         return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully deleted' })
 
 @login_required
 def dashboard_project_view(request, pk):
     rootURL = API_URL + 'projects/tickets/' + pk
-    request.session['active_project'] = pk
+    request.session[ACTIVE_PROJECT_ACCESSOR] = pk
     if 'active_board' not in request.session:
-        request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session['active_project']), default = True).id
+        request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
     project = getSingleProject(request, pk);
     try:
         request.session['is_owner'] = project['owner'] == request.user.id
@@ -197,28 +198,65 @@ def dashboard_project_view(request, pk):
             'projects' : getProjects(request),
             'tickets' : getTickets(request),
             'states' : getStates(request),
+            'boards' : getBoards(request),
+            'missing_states' : getMissingDefaultStates(request),
+            'current_board_name' : Board.objects.get(pk = request.session['active_board']).title,
             }
-
+    data['stateCounts'] = getStateCounts(request, data['states'])
     template = loader.get_template('UI/user/dashboard.html')
     return HttpResponse(template.render(data, request))
 
-def getTickets(request):
-    rootURL = API_URL + 'projects/' + request.session['active_project'] + "/tickets"
+def getStateCounts(request, states):
+    if ACTIVE_PROJECT_ACCESSOR in request.session:
+        context = {}
+        for state in states:
+            taskCount = Ticket.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]), state = state.short_name).count()
+            if taskCount > 0:
+                context[state.short_name] = taskCount
 
-    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
+        return context
+    return None
+def getTickets(request):
+    #rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets"
+
+    #data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
+    #try:
+    #    ro = requests.get(rootURL, headers = data)
+    #    return ro.json()
+    #except ValueError:
+    #    return {}
     try:
-        ro = requests.get(rootURL, headers = data)
-        return ro.json()
+        tickets = Ticket.objects.filter(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])).order_by('priority')
+        return tickets
     except ValueError:
-        return {}
+        return None
 
 def getStates(request):
-    if 'active_project' in request.session:
+    if ACTIVE_PROJECT_ACCESSOR in request.session:
         board = request.session['active_board']
         board_object = Board.objects.get(id = board)
         states = State.objects.filter(board = board_object)
         return states
     return None
+
+def getBoards(request):
+    if ACTIVE_PROJECT_ACCESSOR in request.session:
+        project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])
+        boards = Board.objects.filter(project = project)
+        return boards
+    return None
+
+def getMissingDefaultStates(request):
+        if ACTIVE_PROJECT_ACCESSOR in request.session and 'active_board' in request.session:
+            board = Board.objects.get(pk = request.session['active_board'])
+            board_states = State.objects.filter(board = board).values_list('name', flat=True)
+            current_project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
+
+            default_board = Board.objects.get(project = current_project, default = True)
+            missing_default_states = State.objects.filter(board = default_board).exclude(name__in=board_states)
+            return missing_default_states
+        return None
+
 
 @login_required
 def dashboard_ticket_view(request):
@@ -240,13 +278,20 @@ def new_ticket_view(request):
     elif request.method == "POST":
         form = NewTicketForm(request.POST)
         if form.is_valid():
+            context = { 'form' : form ,
+                        'message' : 'The ticket was successfully created',
+                        }
             data = { 'Authorization' : 'Token ' + request.session['auth']}
-            rootURL = API_URL + 'projects/' + request.session['active_project'] + "/tickets/"
+            rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets/"
             post_fields = form.cleaned_data
-            post_fields['project'] = request.session['active_project']
+            post_fields['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
             response = requests.post(rootURL, headers = data, data = post_fields)
             responseJsonParsed = json.dumps(response.text)
-            return render(request, 'UI/project/tickets/new.html', {'form' : form, 'message' : 'The project was successfully created' })
+            if(response.status_code < 200 or response.status_code > 299):
+                del context['message']
+                context['warning'] = 'There was a problem creating your ticket. The error message was: ' + response.text
+
+            return render(request, 'UI/project/tickets/new.html', context)
 
 def getUsersForProject(request, project_id):
     rootURL = API_URL + 'projects/' + str(project_id) + '/users/all'
@@ -258,7 +303,7 @@ def getUsersForProject(request, project_id):
 @login_required
 def project_settings_view(request):
     if request.method == "GET":
-        data = getUsersForProject(request, request.session['active_project'])
+        data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
         context = {}
         context['data'] = data
         if 'error_message' in request.session:
@@ -286,8 +331,8 @@ def user_project_settings(request):
             responseJsonParsed = json.loads(response.text)
             projects = responseJsonParsed['projects']
 
-            if request.session['active_project'] not in projects:
-                projects.append(int(request.session['active_project']))
+            if request.session[ACTIVE_PROJECT_ACCESSOR] not in projects:
+                projects.append(int(request.session[ACTIVE_PROJECT_ACCESSOR]))
                 responseJsonParsed['projects'] = projects
                 response = requests.put(rootURL, headers = data, data = responseJsonParsed)
                 request.session['message'] =  request.POST['txtUser'] + ' was successfully added to the project.'
@@ -301,7 +346,7 @@ def user_project_settings(request):
             EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+" # Move this to a file to contain all REGEXs
             if re.match(EMAIL_REGEX, request.POST['txtUser']): ##If the non-existant user is an email address, send an invitation by email to use the software.
 
-                createInvitation(request.user, request.POST['txtUser'], request.session['active_project'])
+                createInvitation(request.user, request.POST['txtUser'], request.session[ACTIVE_PROJECT_ACCESSOR])
                 message = "An invitation has been sent to this email address."
                 request.session['message'] = message
                 del request.session['error_message']
@@ -311,8 +356,8 @@ def user_project_settings(request):
         return HttpResponseRedirect('/project/settings')
     elif request.method == "GET":
         data_arr = []
-        if 'active_project' in request.session:
-            data = getUsersForProject(request, request.session['active_project'])
+        if ACTIVE_PROJECT_ACCESSOR in request.session:
+            data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
             for user in data:
                 data_arr.append(user['username'])
         return JsonResponse(data_arr, safe=False)
@@ -371,7 +416,7 @@ def handler404(request):
 def remove_user_from_project(request, slug):
     user = User.objects.get(username = slug)
     profile = Profile.objects.get(user = user)
-    project = Project.objects.get(id = request.session['active_project'])
+    project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])
     profile.projects.remove(project)
     request.session['message'] =  user.username + ' was successfully removed from the project.'
     return HttpResponseRedirect('/project/settings')
@@ -422,3 +467,25 @@ def send_email(template, recipients, subject, **kwargs):
 
 def ticket_detail(request, slug):
     return render(request, 'UI/project/tickets/detail_view.html')
+
+def delete_state(request, pk, slug):
+    board = Board.objects.get(pk = pk)
+    state = State.objects.get(board = board, short_name = slug)
+    state.delete()
+    return HttpResponseRedirect("/dashboard/")
+
+def new_board(request):
+    board = Board(owner = request.user, default = False, project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), title="Copy of Default Board")
+    board.save()
+    request.session['active_board'] = board.id
+    return HttpResponseRedirect("/dashboard/")
+
+def delete_board(request):
+    board = Board.objects.get(pk = request.session['active_board'])
+    board.delete()
+    request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).pk
+    return HttpResponseRedirect("/dashboard/")
+
+def update_board_display(request, pk):
+    request.session['active_board'] = pk
+    return HttpResponseRedirect("/dashboard/")

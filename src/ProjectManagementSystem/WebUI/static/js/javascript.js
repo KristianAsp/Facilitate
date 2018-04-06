@@ -1,3 +1,5 @@
 function displayStateButtons(){
-  $(".editBtn-State").css('display', "inline");
+    $(".editBtn-State").toggle();
+    $(".deleteBtn-State").toggle();
+    $(".editState-row").toggle();
 }

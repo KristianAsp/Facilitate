@@ -111,7 +111,9 @@ def create_states_for_board(sender, instance=None, created=False, **kwargs):
     if created:
         if instance.default == False:
             default_board = Board.objects.get(project = instance.project, default=True)
-            for state in default_board.states.all():
+            states = State.objects.filter(board = default_board)
+            for state in states:
+                state.pk = None
                 state.board = instance
                 state.save()
 

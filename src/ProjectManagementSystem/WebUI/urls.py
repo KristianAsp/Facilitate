@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^logout/$', views.user_logout, name='user_logout'),
     url(r'^project/new/$', views.new_project, name='new_project'),
     url(r'^dashboard/(?P<pk>[0-9]+)$', views.dashboard_project_view, name = 'project_index'),
+    url(r'^dashboard/delete/(?P<pk>[0-9]+)/(?P<slug>[\w_-]+)/$', views.delete_state, name = 'delete_state'),
     url(r'^dashboard/tasks/$', views.dashboard_ticket_view,  name = 'dashboard_ticket_view'),
     url(r'^dashboard/tasks/new$', views.new_ticket_view,  name = 'new_ticket_view'),
     url(r'^project/settings$', views.project_settings_view,  name = 'project_settings'),
@@ -26,4 +27,7 @@ urlpatterns = [
     url(r'^project/tickets/detail/(?P<slug>[ \w_-]+)/$', views.ticket_detail, name = 'ticket_detail'),
     url(r'^(?P<slug>[\w_-]+)/$', views.view_user_profile, name = 'view_user_profile'),
     url(r'^search$', views.search, name = "search"),
+    url(r'^dashboard/board/(?P<pk>[0-9]+)$', views.update_board_display, name='update_board_display'),
+    url(r'^dashboard/board/new$', views.new_board, name='new_board'),
+    url(r'^dashboard/board/delete$', views.delete_board, name='delete_board'),
 ]
