@@ -122,4 +122,10 @@
   </div>
 </div>
 
+<script>
+  var lastUpdatedTime = new Date()
+  var shouldUpdateConcurrently = true
+  var f = concurrencyUpdateBoard
+  setInterval(f, 2000);
+</script>
 {% endblock %}

@@ -17,6 +17,11 @@ from .tables import TicketTable
 from .forms import *
 from WebAPI.models import *
 import pdb, re, uuid
+from datetime import datetime
+from pytz import timezone
+from datetime import timedelta
+
+
 
 API_URL = 'http://127.0.0.1:8000/api/'
 ACTIVE_PROJECT_ACCESSOR = 'active_project'
@@ -489,3 +494,25 @@ def delete_board(request):
 def update_board_display(request, pk):
     request.session['active_board'] = pk
     return HttpResponseRedirect("/dashboard/")
+
+def project_ticket_changes(request):
+    last_modified = request.GET['last_modified']
+    val = datetime.strptime(last_modified, "%d/%m/%Y, %H:%M:%S")
+    print(val)
+    project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
+    project.name
+
+    tickets = Ticket.objects.filter(project = project, last_modified__gt = datetime.now() - timedelta(seconds=2))
+
+    ticketsList = []
+    for ticket in tickets:
+        ticketsList += [{
+        'id' : ticket.pk,
+        'last_modified' : ticket.last_modified.astimezone(timezone('Europe/London')),
+        'name': ticket.name,
+        'priority': ticket.priority,
+        'state': ticket.state,
+        }]
+
+    data_arr = { 'data' : ticketsList }
+    return JsonResponse(data_arr)

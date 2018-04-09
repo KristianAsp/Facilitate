@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import User
 from WebAPI.choices import *
+from datetime import datetime
 
 #####
 # use a signal to detect when a user has been created. When it is created, a unique Token should be allocated to this user
@@ -59,6 +60,7 @@ class Ticket(models.Model):
     short_name = models.CharField(max_length=30, blank = True, null = True)
     description = models.TextField(default = "Hello")
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    last_modified = models.DateTimeField(auto_now = True)
 
     type = models.CharField(
         max_length=1,

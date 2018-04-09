@@ -11,16 +11,11 @@ dragula(Array.from(x), {
         .on('drop', function (el, target, source) {
           if(target.id == "BL"){
             updateStateOfTask(el.id, target.id)
+            shouldUpdateConcurrently = true;
             return
           }
           var cancel = false;
-          //$('#myModal').on('shown.bs.modal', function(){
-          //  $("#myInput").autocomplete({
-          //    source: availableTags,
-          //  });
-          //  return;
-          //});
-
+          shouldUpdateConcurrently = true;
           $("#cancelUpdate").click(function(){
             target.removeChild(el);
             source.appendChild(el);
@@ -35,7 +30,11 @@ dragula(Array.from(x), {
           });
 
           $('#myModal').modal('show');
-         });
+         })
+
+         .on('drag', function (el) {
+           shouldUpdateConcurrently = false;
+          });
 
 function lol(id) {
   return document.getElementById(id);

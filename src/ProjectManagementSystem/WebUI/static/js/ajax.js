@@ -1,8 +1,7 @@
 var updating = false;
 
+
 function updateStateOfTask(taskID, stateID){
-
-
     updating = true
     $.ajax({
       type: 'PUT',
@@ -16,8 +15,30 @@ function updateStateOfTask(taskID, stateID){
       dataType: 'json',
     })
     return false;
+}
 
+function concurrencyUpdateBoard(){
+  if(shouldUpdateConcurrently == true){
+    $.ajax({
+      type: 'GET',
+      url: '/project/tickets/changes',
+      data: {
+        'last_modified' : lastUpdatedTime.toLocaleString(),
+      },
+      success: updatePotentialConcurrentChanges,
+      dataType: 'json',
+    })
+    return false;
+  }
+}
 
+function updatePotentialConcurrentChanges(){
+  var a = this.success.arguments[0].data
+  for (var i = 0; i < a.length; i++) {
+    ticket = a[i]
+    $("#" + ticket.state).append($("#" + ticket.id))
+  }
+  lastUpdatedTime = new Date()
 }
 
 function fetchUsersForProject(){
