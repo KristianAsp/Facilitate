@@ -114,8 +114,8 @@ NAVBAR
   text-align: center;
 }
 
-.new_project {
-  margin-top: 4vh;
+.new_project, .ticket-title {
+  margin-top: 7vh;
 }
 
 .heading h2 {
@@ -126,6 +126,20 @@ NAVBAR
   color: #586069;
   font-size: 14px;
   flex: 1 100%;
+}
+
+.ticket-detail-row {
+  margin-top: 6vh;
+}
+
+.ticket-detail-field {
+  display: inline;
+}
+
+label {
+  display: inline-block;
+  width: 15vh;
+  text-align: left;
 }
 
 /*   */

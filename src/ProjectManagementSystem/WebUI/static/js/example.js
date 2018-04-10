@@ -30,6 +30,12 @@ dragula(Array.from(x), {
           });
 
           $('#myModal').modal('show');
+          $('#myModal').on('shown.bs.modal', function() {
+            $("#myInput").val(el.id);
+            $("#assigned_to").autocomplete({
+              source: availableTags,
+              });
+          })
          })
 
          .on('drag', function (el) {

@@ -61,6 +61,7 @@ class Ticket(models.Model):
     description = models.TextField(default = "Hello")
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now = True)
+    created_on = models.DateTimeField(auto_now_add=datetime.now())
 
     type = models.CharField(
         max_length=1,
@@ -106,6 +107,11 @@ class Activity(models.Model):
 
     item = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True)
 
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+    created_on = models.DateTimeField(auto_now_add=True)
 
 
 @receiver(post_save, sender=Board)

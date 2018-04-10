@@ -36,7 +36,7 @@ def get_auth_token(request, username, password):
 
     r = requests.post(URL, data = data)
     data_json = r.json()
-    request.session['auth'] = data_json['token']
+    return data_json['token']
 
 def user_login(request):
     form = LoginForm(request.POST)
@@ -48,7 +48,7 @@ def user_login(request):
         user = authenticate(request, username = username, password = password)
         if user is not None:
             login(request, user)
-            get_auth_token(request, username = username, password = password)
+            request.session['auth'] = get_auth_token(request, username = username, password = password)
             return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/login.html', {'form': form})
 
@@ -190,10 +190,11 @@ def delete_project(request):
 @login_required
 def dashboard_project_view(request, pk):
     rootURL = API_URL + 'projects/tickets/' + pk
-    request.session[ACTIVE_PROJECT_ACCESSOR] = pk
-    if 'active_board' not in request.session:
+    if 'active_board' not in request.session or pk != request.session[ACTIVE_PROJECT_ACCESSOR]:
+        request.session[ACTIVE_PROJECT_ACCESSOR] = pk
         request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
     project = getSingleProject(request, pk);
+
     try:
         request.session['is_owner'] = project['owner'] == request.user.id
     except KeyError:
@@ -470,8 +471,28 @@ def send_email(template, recipients, subject, **kwargs):
     email.content_subtype = 'html'
     email.send()
 
+@csrf_exempt
 def ticket_detail(request, slug):
-    return render(request, 'UI/project/tickets/detail_view.html')
+    if request.method == "GET":
+        try:
+            ticket = Ticket.objects.get(pk = slug)
+        except Ticket.DoesNotExist:
+            raise Http404
+        return render(request, 'UI/project/tickets/detail_view.html', { 'ticket' : ticket })
+    elif request.method == "PUT":
+        data_arr = {}
+        try:
+            ticket = Ticket.objects.get(pk = int(slug))
+            put = QueryDict(request.body)
+            ticket.name = put.get('name')
+
+            ticket.save()
+            data_arr['ticket'] = "SUCCESS"
+        except Ticket.DoesNotExist:
+            raise Http404
+
+        return JsonResponse(data_arr)
+
 
 def delete_state(request, pk, slug):
     board = Board.objects.get(pk = pk)
@@ -498,10 +519,7 @@ def update_board_display(request, pk):
 def project_ticket_changes(request):
     last_modified = request.GET['last_modified']
     val = datetime.strptime(last_modified, "%d/%m/%Y, %H:%M:%S")
-    print(val)
     project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
-    project.name
-
     tickets = Ticket.objects.filter(project = project, last_modified__gt = datetime.now() - timedelta(seconds=2))
 
     ticketsList = []

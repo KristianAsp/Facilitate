@@ -90,3 +90,17 @@ function handlingFunctionForFailure(){
   $('#label').empty()
   $('#label').append('<div class="alert alert-danger"><strong>Failure!</strong> Something went wrong. Please try again! If the problem persists, please contact customer support.</div>')
 }
+
+function saveTicketEdit(slug, newName){
+  var hm =
+  $.ajax({
+    type: 'PUT',
+    url: '/project/tickets/detail/' + slug + '/',
+    data : {
+      'name' : $('#ticket-name').val(),
+    },
+    success: handlingFunctionForUpdating,
+    dataType: 'json'
+    })
+    return false;
+}
