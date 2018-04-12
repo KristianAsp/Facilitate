@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from WebAPI.choices import *
 from datetime import datetime
 
+
 #####
 # use a signal to detect when a user has been created. When it is created, a unique Token should be allocated to this user
 # for authentication purposes whenever they use the API.
@@ -62,6 +63,7 @@ class Ticket(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now = True)
     created_on = models.DateTimeField(auto_now_add=datetime.now())
+    completed_on = models.DateTimeField(blank=True, null=True)
 
     type = models.CharField(
         max_length=1,
@@ -89,6 +91,14 @@ class Ticket(models.Model):
         super(Ticket, self).save(*args, **kwargs)
         if not self.short_name:
             self.short_name = self.project.short_name + str(self.id)
+            self.save()
+
+        if self.state == 'C' and not self.completed_on:
+            self.completed_on = datetime.now()
+            self.save()
+
+        elif self.state != "C" and self.completed_on:
+            self.completed_on = None
             self.save()
 
 class Invitation(models.Model):
@@ -124,8 +134,6 @@ def create_states_for_board(sender, instance=None, created=False, **kwargs):
                 state.pk = None
                 state.board = instance
                 state.save()
-
-
 
 @receiver(post_save, sender=Project)
 def create_default_board_for_project(sender, instance=None, created=False, **kwargs):

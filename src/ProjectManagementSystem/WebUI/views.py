@@ -120,7 +120,7 @@ def user_register(request):
 
         profile.save()
         login(request, user)
-        get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
+        request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
         return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/register.html', {'form': form})
 
@@ -600,7 +600,7 @@ def project_ticket_changes(request):
         'id' : ticket.pk,
         'last_modified' : ticket.last_modified.astimezone(timezone('Europe/London')),
         'name': ticket.name,
-        'assigned_to' : ticket.assigned_to.first_name,
+        'assigned_to' : ticket.assigned_to.first_name if ticket.assigned_to is not None else "",
         'priority': ticket.priority,
         'state': ticket.state,
         }]

@@ -14,7 +14,7 @@ dragula(Array.from(x), {
           }
         })
         .on('drop', function (el, target, source) {
-          if(target.id == "BL"){
+          if(target.id == "BL" || target.id == "C"){
             updateStateOfTask(el.id, target.id)
             shouldUpdateConcurrently = true;
             return
@@ -29,7 +29,7 @@ dragula(Array.from(x), {
               });
               $("#update").off("click");
               $(".dismiss-modal").off("click");
-              
+
               $("#update").click(function(){
                 updateStateOfTask(el.id, target.id);
                 shouldUpdateConcurrently = true;
