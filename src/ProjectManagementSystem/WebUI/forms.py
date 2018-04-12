@@ -73,14 +73,15 @@ class NewTicketForm(forms.Form):
     priority = forms.ChoiceField(choices = PRIORITY_CHOICES, widget = forms.Select(), required = True, initial ='')
     priority.widget.attrs.update({'class' : 'form-control'})
 
-    description = forms.CharField(max_length=100, required = False)
+    description = forms.CharField(widget=forms.Textarea(attrs={'rows': 5,}), max_length=3000, required = False)
     description.widget.attrs.update({'class' : 'form-control'})
 
-    type = forms.ChoiceField(choices = TYPE_CHOICES, widget = forms.Select(), required = True, initial ='')
+    type = forms.ChoiceField(choices = TYPE_CHOICES, widget = forms.Select(), required = True, initial ='' )
     type.widget.attrs.update({'class' : 'form-control'})
 
     assigned_to = forms.CharField(max_length=100, required = False)
-    assigned_to.widget.attrs.update({'class' : 'form-control'})
+    assigned_to.widget.attrs.update({'class' : 'form-control assigned_to', 'id' : 'assigned_to'})
+
 
 class ProfileForm(forms.Form):
     username = forms.CharField(max_length=100)

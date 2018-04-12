@@ -1,4 +1,8 @@
-from django.shortcuts import render
+import pdb, re, uuid, requests, json, hashlib
+from datetime import datetime, timedelta
+from pytz import timezone
+from django.db.models import Q
+from django.shortcuts import render, redirect
 from django.template import loader
 from django.http import HttpResponse, JsonResponse, QueryDict, HttpResponseRedirect, HttpResponseBadRequest, Http404
 from django.core.serializers.json import DjangoJSONEncoder
@@ -7,8 +11,6 @@ from django.template.loader import render_to_string, get_template
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from django.core.mail import EmailMessage
-import requests, json
-import hashlib
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -16,11 +18,7 @@ from django_tables2 import RequestConfig
 from .tables import TicketTable
 from .forms import *
 from WebAPI.models import *
-import pdb, re, uuid
-from datetime import datetime
-from pytz import timezone
-from datetime import timedelta
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 API_URL = 'http://127.0.0.1:8000/api/'
@@ -69,7 +67,15 @@ def dashboard_index(request):
 @login_required
 def profile_index(request):
     form = ProfileForm()
-    return render(request, 'UI/user/profile.html', {'form': form, 'user': request.user})
+    context = { 'form' : form,
+                'user' : request.user,
+                }
+    if 'current_password_error' in request.session:
+        context['current_password_error'] = request.session['current_password_error']
+    if 'matching_password_error' in request.session:
+        context['matching_password_error'] = request.session['matching_password_error']
+
+    return render(request, 'UI/user/profile.html', context)
 
 def getProjects(request):
     rootURL = API_URL + 'projects/'
@@ -291,6 +297,11 @@ def new_ticket_view(request):
             rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets/"
             post_fields = form.cleaned_data
             post_fields['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
+            try:
+                post_fields['assigned_to'] = User.objects.get(username = post_fields['assigned_to']).pk
+            except User.DoesNotExist:
+                post_fields['assigned_to'] = None
+
             response = requests.post(rootURL, headers = data, data = post_fields)
             responseJsonParsed = json.dumps(response.text)
             if(response.status_code < 200 or response.status_code > 299):
@@ -392,27 +403,80 @@ def view_user_profile(request, slug):
         responseJsonParsed = json.loads(response.text)
         del responseJsonParsed['password']
 
-    return render(request, 'UI/user/profile.html', {'form': form, 'user': responseJsonParsed })
+    context = { 'form' : form,
+                'user' : responseJsonParsed,
+                }
+
+    if 'current_password_error' in request.session:
+        context['current_password_error'] = request.session['current_password_error']
+        del request.session['current_password_error']
+    if 'matching_password_error' in request.session:
+        context['matching_password_error'] = request.session['matching_password_error']
+        del request.session['matching_password_error']
+
+    return render(request, 'UI/user/profile.html', context)
 
 def search(request):
-    context = {
-            'users' : filterUsers(request, request.GET['query']),
-            'projects' : filterProjects(request, request.GET['query']),
-            }
-    return render(request, 'UI/search/search.html')
+    if 'type' not in request.GET:
+        return redirect(request.get_full_path() + "&type=user")
+
+
+    if request.GET['type'] == "user":
+        users = filterUsers(request, request.GET['query'])
+        projects = filterProjects(request, request.GET['query'])
+
+        paginator = Paginator(users, 10)
+        page = request.GET.get('page', 1)
+
+        try:
+            search_result = paginator.page(page)
+        except PageNotAnInteger:
+            search_result = paginator.page(1)
+        except EmptyPage:
+            search_result = paginator.page(paginator.num_pages)
+
+        context = {
+                'result' : search_result,
+                'userscount' : len(users),
+                'projectscount' : len(projects),
+                }
+
+    elif request.GET['type'] == "project":
+        users = filterUsers(request, request.GET['query'])
+        projects = filterProjects(request, request.GET['query'])
+
+        paginator = Paginator(projects, 10)
+        page = request.GET.get('page', 1)
+
+        try:
+            search_result = paginator.page(page)
+        except PageNotAnInteger:
+            search_result = paginator.page(1)
+        except EmptyPage:
+            search_result = paginator.page(paginator.num_pages)
+
+        context = {
+                'result' : search_result,
+                'userscount' : len(users),
+                'projectscount' : len(projects),
+                }
+
+    return render(request, 'UI/search/search.html', context )
 
 def filterUsers(request, query):
     list_of_query_words = query.split(" ")
-    filteredUsers = []
+    q = Q()
     for word in list_of_query_words:
-        filteredUsers += User.objects.filter(username__icontains = word)
+        q |= Q(username__icontains = word)
+    filteredUsers = User.objects.filter(q)
     return filteredUsers;
 
 def filterProjects(request, query):
     list_of_query_words = query.split(" ")
-    filteredProjects = []
+    q = Q()
     for word in list_of_query_words:
-        filteredProjects += Project.objects.filter(name__icontains = word, visibility = True)
+        q |= Q(name__icontains = word, visibility = True)
+    filteredProjects = Project.objects.filter(q)
     return filteredProjects;
 
 def handler404(request):
@@ -484,13 +548,21 @@ def ticket_detail(request, slug):
         try:
             ticket = Ticket.objects.get(pk = int(slug))
             put = QueryDict(request.body)
-            ticket.name = put.get('name')
-
+            if 'name' in put:
+                ticket.name = put.get('name')
+            if 'assigned_to' in put:
+                try:
+                    ticket.assigned_to = User.objects.get(username = put.get('assigned_to'))
+                except User.DoesNotExist:
+                    ticket.assigned_to = None
+            if 'comment' in put:
+                pass
+            if 'state' in put:
+                ticket.state = put.get('state')
             ticket.save()
             data_arr['ticket'] = "SUCCESS"
         except Ticket.DoesNotExist:
             raise Http404
-
         return JsonResponse(data_arr)
 
 
@@ -528,9 +600,43 @@ def project_ticket_changes(request):
         'id' : ticket.pk,
         'last_modified' : ticket.last_modified.astimezone(timezone('Europe/London')),
         'name': ticket.name,
+        'assigned_to' : ticket.assigned_to.first_name,
         'priority': ticket.priority,
         'state': ticket.state,
         }]
 
     data_arr = { 'data' : ticketsList }
     return JsonResponse(data_arr)
+
+def updateUserDetails(request):
+    if request.method == "POST":
+        try:
+            user = request.user
+            user.first_name = request.POST.get('first_name')
+            user.last_name = request.POST.get('last_name')
+            user.username = request.POST.get('username')
+            user.email = request.POST.get('email')
+            user.save()
+        except User.DoesNotExist:
+            raise Http404
+        return redirect('/' + request.user.username)
+
+def updateUserPassword(request):
+    if request.method == "POST":
+        try:
+            user = request.user
+            if not user.check_password(request.POST.get('current_password')):
+                request.session['current_password_error'] = 'Incorrect password'
+            elif request.POST.get('password') != request.POST.get('confirm_password'):
+                request.session['matching_password_error'] = "Passwords do not match"
+            else:
+                user.set_password(request.POST.get('password'))
+                user.save()
+                user = authenticate(request, username = user.username, password = request.POST.get('password'))
+                if user is not None:
+                    login(request, user)
+                    request.session['auth'] = get_auth_token(request, username = user.username, password = request.POST.get('password'))
+        except User.DoesNotExist:
+            raise Http404
+
+        return redirect('/' + request.user.username)

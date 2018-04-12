@@ -14,6 +14,8 @@
     </div>
     <div>
       <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Edit</button>
+      <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Delete</button>
+      <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</button>
     </div>
   </div>
   <script>
@@ -22,9 +24,6 @@
       fields.each(function (){
         $(this).replaceWith("<input type='text' value='" + $(this).text() + "' id='" + this.id + "'>")
       });
-
-
-
 
       $('#description').replaceWith("<textarea>" + $('#description').text() + "</textarea>")
       $('#editTicket').replaceWith("<button id='saveTicket' onclick='saveEdit()' class='btn btn-default'>Save</button>")
@@ -49,8 +48,9 @@
       <label>Status</label> <p class="ticket-detail-field field-choice">{{ ticket.get_state_display }}</p><br>
     </div>
     <div class="col-xs-6">
-      <label>Assigned To</label> <p class="ticket-detail-field field-text">{{ ticket.assigned_to }}</p> <br>
+      <label>Assigned To</label> <p class="ticket-detail-field field-text">{{ ticket.assigned_to.first_name }}</p> <br>
       <label>Created On</label> <p class="ticket-detail-field">{{ ticket.created_on }} (UTC)</p><br>
+      <label>Last Updated</label> <p class="ticket-detail-field">{{ ticket.last_modified }} (UTC)</p><br>
     </div>
   </div>
 

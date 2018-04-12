@@ -31,4 +31,7 @@ urlpatterns = [
     url(r'^dashboard/board/(?P<pk>[0-9]+)$', views.update_board_display, name='update_board_display'),
     url(r'^dashboard/board/new$', views.new_board, name='new_board'),
     url(r'^dashboard/board/delete$', views.delete_board, name='delete_board'),
+    url(r'^profile/update/$', views.updateUserDetails, name='updateUserDetails'),
+    url(r'^profile/update/password$', views.updateUserPassword, name='updateUserPassword'),
+
 ]

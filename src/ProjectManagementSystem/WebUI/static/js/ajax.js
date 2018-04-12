@@ -1,20 +1,23 @@
-var updating = false;
+
 
 
 function updateStateOfTask(taskID, stateID){
-    updating = true
-    $.ajax({
-      type: 'PUT',
-      url: '/api/tickets/' + taskID + '/',
-      data: {
-        'state' : stateID,
-      },
-      success: function(){
-        updating = false;
-      },
-      dataType: 'json',
-    })
-    return false;
+  var assignee = $('#assigned_to').val()
+  var comment = $('#id_new_comment').val()
+  $.ajax({
+    type: 'PUT',
+    url: '/project/tickets/detail/' + taskID + '/',
+    data: {
+      'state' : stateID,
+      'assigned_to' : assignee,
+      'comment' : comment,
+    },
+    success: function(){
+
+    },
+    dataType: 'json',
+  })
+  return false;
 }
 
 function concurrencyUpdateBoard(){
@@ -36,7 +39,14 @@ function updatePotentialConcurrentChanges(){
   var a = this.success.arguments[0].data
   for (var i = 0; i < a.length; i++) {
     ticket = a[i]
-    $("#" + ticket.state).append($("#" + ticket.id))
+    var nameElement = $("#" + ticket.id + " #assigned_to_ticket")
+    if($("#" + ticket.state)){
+      $("#" + ticket.id + " #assigned_to_ticket").text(ticket.assigned_to);
+      $("#" + ticket.state).append($("#" + ticket.id))
+    }
+    else{
+      $("#" + ticket.id).remove()
+    }
   }
   lastUpdatedTime = new Date()
 }
@@ -48,37 +58,13 @@ function fetchUsersForProject(){
     data: {},
     success: function(data){
       availableTags = data;
+      $("#assigned_to").autocomplete({
+          source: availableTags,
+      });
     },
     dataType: 'json',
   })
   return false;
-}
-
-/*********
-Creates and sends an AJAX PUT request to update a specific user and profile.
-**********/
-function updateUser(){
-  var valid = validateFields()
-  if(valid == false){
-    return;
-  }
-  $.ajax({
-    type: 'PUT',
-    url: '/api/users/',
-    data : {
-      first_name : $('#first_name').val(),
-      last_name : $('#last_name').val(),
-      password : $('#password').val(),
-      confirm_password : $('#confirm_password').val(),
-      current_password : $('#current_password').val(),
-      email : $('#email').val(),
-      'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val(),
-    },
-    success: handlingFunctionForUpdating,
-    error: handlingFunctionForFailureUpdate,
-    dataType: 'json'
-    })
-    return false;
 }
 
 function handlingFunctionForUpdating(){

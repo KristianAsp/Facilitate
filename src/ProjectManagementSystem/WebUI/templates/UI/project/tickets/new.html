@@ -14,37 +14,46 @@
       <p class="heading-description">A project contains all the initial settings needed. Participants can be added manually later or through the automated invitation system.</p>
     </div>
     <hr></hr>
-
   <form action="{% url 'new_ticket_view' %}" method="POST">
     {% csrf_token %}
     <div class="row">
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="inputName">Ticket Name</label>
+          <label for="inputName">Ticket Summary:
+            <a href="#" data-toggle="tooltip" data-placement="top" title="Looks like this tho!"><span class="glyphicon glyphicon-info-sign"> </span></a>
+          </label>
           {{ form.name }}
         </div>
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="Priority">Priority</label>
+          <label for="Priority">Priority:
+            <a href="#" data-toggle="tooltip" data-placement="top" title="Looks like this tho!"><span class="glyphicon glyphicon-info-sign"> </span></a>
+          </label>
           {{ form.priority }}
         </div>
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="Description">Description</label>
+          <label for="Description">Description:
+            <a href="#" data-toggle="tooltip" data-placement="top" title="Looks like this tho!"><span class="glyphicon glyphicon-info-sign"> </span></a>
+          </label>
           {{ form.description }}
         </div>
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="Description">Type</label>
+          <label for="Description">Type:
+            <a href="#" data-toggle="tooltip" data-placement="auto top" title="Looks like this tho!"><span class="glyphicon glyphicon-info-sign"> </span></a>
+          </label>
           {{ form.type }}
         </div>
       </div>
       <div class="col-md-6 col-xs-12">
         <div class="form-group">
-          <label for="Description">Assignee</label>
+          <label for="Description">Assignee:
+            <a href="#" data-toggle="tooltip" data-placement="auto top" title="Looks like this tho!"><span class="glyphicon glyphicon-info-sign"> </span></a>
+          </label>
           {{ form.assigned_to }}
         </div>
       </div>
@@ -55,4 +64,10 @@
   </form>
   </div>
 </div>
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    var availableTags = fetchUsersForProject();
+});
+</script>
 {% endblock %}

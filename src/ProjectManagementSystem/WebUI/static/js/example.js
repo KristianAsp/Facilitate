@@ -2,6 +2,11 @@
 var x = document.getElementsByClassName("ticket-column");
 var availableTags = fetchUsersForProject()
 
+function populateAvailableTags(){
+  $(".assigned_to").autocomplete({
+    source: availableTags,
+  });
+}
 dragula(Array.from(x), {
           moves: function(el, container, handle){
             var res = $(el).is('.unique-ticket')
@@ -14,33 +19,32 @@ dragula(Array.from(x), {
             shouldUpdateConcurrently = true;
             return
           }
-          var cancel = false;
-          shouldUpdateConcurrently = true;
-          $("#cancelUpdate").click(function(){
-            target.removeChild(el);
-            source.appendChild(el);
-            cancel = true;
-          });
-
-          $("#update").click(function(){
-            if(!cancel){
-              updateStateOfTask(el.id, target.id);
-              $('#myModal').modal('hide');
-            }
-          });
-
           $('#myModal').modal('show');
+
+
+
           $('#myModal').on('shown.bs.modal', function() {
-            $("#myInput").val(el.id);
-            $("#assigned_to").autocomplete({
+            $(".assigned_to").autocomplete({
               source: availableTags,
+              });
+              $("#update").off("click");
+              $(".dismiss-modal").off("click");
+              
+              $("#update").click(function(){
+                updateStateOfTask(el.id, target.id);
+                shouldUpdateConcurrently = true;
+                $('#myModal').modal('hide');
+              });
+
+              $(".dismiss-modal").click(function(){
+                source.appendChild(el);
               });
           })
          })
-
          .on('drag', function (el) {
            shouldUpdateConcurrently = false;
           });
+
 
 function lol(id) {
   return document.getElementById(id);
@@ -49,10 +53,4 @@ function lol(id) {
 
 function validateUpdate(){
   return true;
-}
-
-
-
-function updateClubdays(button){
-
 }

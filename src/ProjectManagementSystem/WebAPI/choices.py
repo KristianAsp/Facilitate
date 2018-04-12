@@ -1,6 +1,4 @@
 TYPE_CHOICES = (
-    ('S', 'Story'),
-    ('E', 'Epic'),
     ('B', 'Bug'),
     ('T', 'Task'),
 )

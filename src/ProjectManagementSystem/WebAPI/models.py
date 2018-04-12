@@ -56,9 +56,9 @@ class Profile(models.Model):
         return self.user.username
 
 class Ticket(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=300)
     short_name = models.CharField(max_length=30, blank = True, null = True)
-    description = models.TextField(default = "Hello")
+    description = models.TextField(default = "")
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now = True)
     created_on = models.DateTimeField(auto_now_add=datetime.now())

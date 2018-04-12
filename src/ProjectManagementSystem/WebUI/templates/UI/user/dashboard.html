@@ -80,7 +80,7 @@
                   <div class="unique-ticket {{ticket.get_priority_display }}" style="background-color: #fff;" id = {{ ticket.id }}>
                     <div class="row ticket-header">
                       <div style="float: left; line-height: 4vh;">ID: {{ ticket.short_name }}</div>
-                      <div style="float: right; line-height: 4vh;">{{ ticket.assigned_to.first_name }}</div>
+                      <div style="float: right; line-height: 4vh;"><span id="assigned_to_ticket">{{ ticket.assigned_to.first_name }}</span></div>
                     </div>
                     <div class="row ticket-body">
                       <div style="line-height: 4vh; float: left">
@@ -104,28 +104,42 @@
     <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
-        <button style="width: 1em;" type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Modal Header</h4>
+        <button style="width: 1em;" type="button" class="close dismiss-modal" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Update</h4>
       </div>
-      <div class="modal-body">
-        <form action="#">
-          <div class="ui-widget" style="width:300px;">
-            <label for="assigned_to">Assigned To
-              <input id="assigned_to" type="text" name="assigned_to" placeholder="">
-            </label>
-            <label for="priority-selection">Priority
+      <div class="modal-body col-xs-10 col-xs-offset-1">
+        <form action="#" method="POST">
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="assigned_to">Assigned To:</label>
+              <input id="assigned_to" type="text" name="assigned_to" class="form-control assigned_to" placeholder="">
+              <p class="input_description">Start typing to get a list of possible matches</p>
+            </div>
+          </div>
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="priority-selection">Priority:</label>
               <select class="form-control" id="priority-selection">
+                <option>Critical</option>
                 <option>High</option>
                 <option>Medium</option>
                 <option>Low</option>
               </select>
-              </label>
+            </div>
+          </div>
+          <div class="col-xs-12">
+            <div class="form-group">
+              <label for="inputName">Add Comment:</label>
+              <textarea type="text" name="first_name" class="form-control" id="id_first_name"></textarea>
+            </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" id ="cancelUpdate" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button id ="update" type="button" class="btn btn-primary">Update</button>
+        <div class="col-xs-10 col-xs-offset-1">
+          <button type="button" id ="cancelUpdate" class="btn btn-default dismiss-modal" data-dismiss="modal">Cancel</button>
+          <button id ="update" type="button" class="btn btn-primary">Update</button>
+        </div>
       </div>
     </div>
   </div>
@@ -136,5 +150,11 @@
   var shouldUpdateConcurrently = true
   var f = concurrencyUpdateBoard
   setInterval(f, 2000);
+
+  $('#myModal').on('shown.bs.modal', function() {
+    $(".assigned_to").autocomplete({
+      source: availableTags,
+      });
+  })
 </script>
 {% endblock %}

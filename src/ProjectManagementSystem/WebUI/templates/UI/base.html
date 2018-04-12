@@ -58,10 +58,13 @@
         </ul>
       </div>
     </nav>
+
+    <div class="wrapper">
       {% block content %}
       {% endblock %}
-      {% if request.user.is_authenticated %}
-        <script src='{% static "js/example.js" %}'></script>
-      {% endif %}
+    </div>
+    {% if request.user.is_authenticated %}
+      <script src='{% static "js/example.js" %}'></script>
+    {% endif %}
   </body>
 </html>

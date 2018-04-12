@@ -1,3 +1,4 @@
+
 .login-dark {
   top: 6vh;
   height: 94vh;
@@ -138,7 +139,7 @@ NAVBAR
 
 label {
   display: inline-block;
-  width: 15vh;
+  width: 20vh;
   text-align: left;
 }
 
@@ -498,4 +499,12 @@ footer {
 
 .editState-row {
   margin-top: 0.7em;
+}
+
+.col-xs-05 {
+  width: 6%;
+  float: left;
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
 }
