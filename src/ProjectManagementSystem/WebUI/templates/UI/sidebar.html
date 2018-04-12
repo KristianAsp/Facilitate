@@ -1,33 +1,44 @@
-<nav id="sidebar" class ="col-xs-2">
+<nav id="sidebar">
     <div class="sidebar-header">
-        <h4>Manage your project</h4>
+        <h3>Project Application</h3>
+        <strong>PA</strong>
     </div>
-    <ul class="list-unstyled components">
-      <li>
-          <a id = "project-dropdown" href="#pageSubmenu" data-toggle="collapse" aria-expanded="false">Projects</a>
-          <ul class="collapse list-unstyled" id="pageSubmenu">
-            {% if projects %}
-              {% for project in projects %}
-                <li>
-                  <a href="{% url 'project_index' pk=project.id %}">{{ project.name }}</a>
-                </li>
-              {% endfor %}
-            {% endif %}
-          </ul>
-      </li>
-    </ul>
+
     <ul class="list-unstyled components">
         <li class="active">
-          <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='/dashboard/'" {% endif %}>Dashboard</button>
-        </li>
-        <li>
-          <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='{% url 'dashboard_ticket_view' %}';" {% endif %}>Tasks</button>
-        </li>
-        <li>
-          <button {% if request.session.active_project is Not %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Boards</button>
-        </li>
-        <li>
-          <button {% if not request.session.is_owner or request.session.active_project is Not %} disabled {% else %} onclick="location.href='{% url 'project_settings' %}';" {% endif %}>Settings</button>
+            <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">
+                <i class="glyphicon glyphicon-home"></i>
+                Projects
+            </a>
+            <ul class="collapse list-unstyled" id="homeSubmenu">
+              {% if projects %}
+                {% for project in projects %}
+                  <li>
+                    <a href="{% url 'project_index' pk=project.id %}">{{ project.name }}</a>
+                  </li>
+                {% endfor %}
+              {% endif %}
+            </ul>
         </li>
     </ul>
+    <ul class ="list-unstyled components">
+        <li>
+            <a href='/dashboard/'>Dashboard</a>
+        </li>
+        <li>
+            <a href="{% url 'dashboard_ticket_view' %}">Tasks</a>
+        </li>
+        <li>
+            <a href="{% url 'project_settings' %}" >Boards</a>
+        </li>
+        <li>
+            <a href="{% url 'project_settings' %}">Settings</a>
+        </li>
+    </ul>
+    <div class="navbar-header">
+        <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+            <i class="glyphicon glyphicon-align-left"></i>
+            <span>Toggle Sidebar</span>
+        </button>
+    </div>
 </nav>

@@ -1,105 +1,97 @@
 {%  extends 'UI/base.html' %}
 {% block content %}
-<div class="col-sm-12" style="padding-left: 0px; padding-right:0px;">
-  <div class="wrapper">
-    <div class="col-xs-2">
-      {% include 'UI/sidebar.html' %}
+{% include 'UI/sidebar.html' %}
+<div id="content" class ="content ticketcolumns" style = "background-color: #fff">
+  {% if request.session.active_project %}
+    <div class="row">
+      <div class="dropdown" style="float: right;">
+        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Boards
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          {% if boards %}
+            {% for board in boards %}
+              <li><a href="{% url 'update_board_display' pk=board.id %}" {% if request.session.active_board|add:0 == board.id %} style="background-color:black;" {% endif %} >{{ board.title }}</a></li>
+            {% endfor %}
+          {% endif %}
+        </ul>
+        <button class="btn btn-primary" type="button" onclick="displayStateButtons()">Edit Board</button>
+        <a href = "{% url 'new_board' %}" class="btn btn-primary" type="submit">New Board</a>
+        <a href = "{% url 'new_ticket_view' %}" class="btn btn-primary" type="submit">New task</a>
+      </div>
     </div>
-    <div class = "col-xs-10 content ticketcolumns" style = "background-color: #fff">
-      {% if request.session.active_project %}
-        <div class="row">
-          <div class="dropdown" style="float: right;">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Boards
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              {% if boards %}
-                {% for board in boards %}
-                  <li><a href="{% url 'update_board_display' pk=board.id %}" {% if request.session.active_board|add:0 == board.id %} style="background-color:black;" {% endif %} >{{ board.title }}</a></li>
-                {% endfor %}
-              {% endif %}
-            </ul>
-            <button class="btn btn-primary" type="button" onclick="displayStateButtons()">Edit Board</button>
-            <a href = "{% url 'new_board' %}" class="btn btn-primary" type="submit">New Board</a>
-            <a href = "{% url 'new_ticket_view' %}" class="btn btn-primary" type="submit">New task</a>
-          </div>
-        </div>
-        <div style="height: 3.2em;">
-          <div class="row editState-row" style="float: right">
-            <div class="dropdown">
-              <input type="text" size="30" value="{{ current_board_name }}">
-              <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Add State
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu">
-                {% if missing_states %}
-                  {% for state in missing_states %}
-                  <li><a href="" >{{ state.name }}</a></li>
-                  {% endfor %}
-                {% endif %}
-              </ul>
-              <a href = "{% url 'delete_board' %}" class="btn btn-primary" type="submit">Delete Board</a>
-            </div>
-          </div>
-        </div>
-        <div class ="row state-row col-xs-12">
-        {% if states %}
-          {% for state in states %}
-          <div style="width: -webkit-fill-available">
-            <div class="ticket-headers" {% if state.short_name == "BL"  or state.short_name == "C"  %} style=" margin-left: 0.2em; margin-right: 0.2em; height: 5.2em; background-color: #ADD8E6; " {% else %} style="height: 2.5em; background-color: #ADD8E6; margin-bottom: 0.2em" {% endif %}>
-              {% if state.short_name == "BL" or state.short_name == "C" %}
-                <h5 style="line-height: 5.2em;">{{ state.name }}
-                {% for k,v in stateCounts.0.items %}
-                  {% if k == state.short_name %}
-                    <div style="display: inline" class="state-count">({{ v }})</div>
-                  {% endif %}
-                {% endfor %}
-                </h5>
-              {% endif  %}
-            </div>
-            {% if state.short_name != "BL" and state.short_name != "C" %}
-              <div class="ticket-headers-bottom" {% if state.short_name == "BL" or state.short_name == "C" %} style="margin-left: 0.2em; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% else  %} style="margin-left: unset; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% endif %}>
-                <h5> {{ state.name }}
-                {% for key, value in stateCounts.0.items %}
-                  {% if key == state.short_name %}
-                    <div style="display: inline" class="state-count">({{ value }})</div>
-                  {% endif %}
-                {% endfor %}
-              </h5>
-              </div>
+    <div class="row">
+      <div class="editState-row">
+          <input type="text" size="30" value="{{ current_board_name }}">
+          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Add State
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            {% if missing_states %}
+              {% for state in missing_states %}
+              <li><a href="" >{{ state.name }}</a></li>
+              {% endfor %}
             {% endif %}
-            <div class="col-xs-12 ticket-column" id="{{ state.short_name }}">
-              {% if state.short_name != "BL"  and state.short_name != "C" %}
-                <div class="row">
-                  <button id="edit_{{state.short_name}}" class="editBtn-State btn btn-primary" type="button">Edit</button>
-                  <a id="delete{{state.short_name}}" class="deleteBtn-State btn btn-primary" href="{% url 'delete_state' pk=request.session.active_board slug=state.short_name %}"type="button">Delete</a>
+          </ul>
+          <a href = "{% url 'delete_board' %}" class="btn btn-primary" type="submit">Delete Board</a>
+      </div>
+    </div>
+    <div class ="state-row">
+    {% if states %}
+      {% for state in states %}
+      <div class="individual-state-column">
+        <div class="ticket-headers {% if state.short_name == 'BL'  or state.short_name == 'C'  %}ticket-headers-block {% else %} ticket-headers-slim {% endif %}">
+          {% if state.short_name == "BL" or state.short_name == "C" %}
+            <h5 style="line-height: 5.2em;">{{ state.name }}
+            {% for k,v in stateCounts.0.items %}
+              {% if k == state.short_name %}
+                <div style="display: inline" class="state-count">({{ v }})</div>
+              {% endif %}
+            {% endfor %}
+            </h5>
+          {% endif  %}
+        </div>
+        {% if state.short_name != "BL" and state.short_name != "C" %}
+          <div class="ticket-headers-bottom" {% if state.short_name == "BL" or state.short_name == "C" %} style="margin-left: 0.2em; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% else  %} style="margin-left: unset; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% endif %}>
+            <h5> {{ state.name }}
+            {% for key, value in stateCounts.0.items %}
+              {% if key == state.short_name %}
+                <div style="display: inline" class="state-count">({{ value }})</div>
+              {% endif %}
+            {% endfor %}
+          </h5>
+          </div>
+        {% endif %}
+        <div class="col-xs-12 ticket-column" id="{{ state.short_name }}">
+          {% if state.short_name != "BL"  and state.short_name != "C" %}
+            <div class="row">
+              <button id="edit_{{state.short_name}}" class="editBtn-State btn btn-primary" type="button">Edit</button>
+              <a id="delete{{state.short_name}}" class="deleteBtn-State btn btn-primary" href="{% url 'delete_state' pk=request.session.active_board slug=state.short_name %}"type="button">Delete</a>
+            </div>
+          {% endif %}
+          {% if tickets %}
+            {% for ticket in tickets %}
+              {%  if ticket.state == state.short_name %}
+                <div class="unique-ticket {{ticket.get_priority_display }}" style="background-color: #fff;" id = {{ ticket.id }}>
+                  <div class="row ticket-header">
+                    <div style="float: left; line-height: 4vh;">ID: {{ ticket.short_name }}</div>
+                    <div style="float: right; line-height: 4vh;"><span id="assigned_to_ticket">{{ ticket.assigned_to.first_name }}</span></div>
+                  </div>
+                  <div class="row ticket-body">
+                    <div style="line-height: 4vh; float: left">
+                      <a href="{% url 'ticket_detail' slug=ticket.pk %}">{{ ticket.name }}</a>
+                    </div>
+                  </div>
                 </div>
               {% endif %}
-              {% if tickets %}
-                {% for ticket in tickets %}
-                  {%  if ticket.state == state.short_name %}
-                    <div class="unique-ticket {{ticket.get_priority_display }}" style="background-color: #fff;" id = {{ ticket.id }}>
-                      <div class="row ticket-header">
-                        <div style="float: left; line-height: 4vh;">ID: {{ ticket.short_name }}</div>
-                        <div style="float: right; line-height: 4vh;"><span id="assigned_to_ticket">{{ ticket.assigned_to.first_name }}</span></div>
-                      </div>
-                      <div class="row ticket-body">
-                        <div style="line-height: 4vh; float: left">
-                          <a href="{% url 'ticket_detail' slug=ticket.pk %}">{{ ticket.name }}</a>
-                        </div>
-                      </div>
-                    </div>
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        {% endif %}
+            {% endfor %}
+          {% endif %}
         </div>
-      {% endif %}
+      </div>
+      {% endfor %}
+    {% endif %}
     </div>
-  </div>
+  {% endif %}
 </div>
 <div id="myModal" class="modal fade" role="dialog">
   <div class="modal-dialog">
@@ -152,10 +144,6 @@
   var f = concurrencyUpdateBoard
   setInterval(f, 2000);
 
-  $('#myModal').on('shown.bs.modal', function() {
-    $(".assigned_to").autocomplete({
-      source: availableTags,
-      });
-  })
+
 </script>
 {% endblock %}

@@ -1,81 +1,84 @@
 {%  extends 'UI/base.html' %}
 
 {% block content %}
-<div class="container">
-  <div class= "row ticket-title">
-    {% if message %}
-      <div class="alert alert-success"><strong>Success!</strong>  {{ message }}</div>
-    {% endif %}
-    {% if warning %}
-      <div class="alert alert-danger"><strong>Something went wrong!</strong>  {{ warning }}</div>
-    {% endif %}
-    <div class="heading">
-      <h2>{{ticket.short_name}} - {{ ticket.name }}</h2>
+{% include 'UI/sidebar.html' %}
+  <div id="content">
+  <div class="container">
+    <div class= "row ticket-title">
+      {% if message %}
+        <div class="alert alert-success"><strong>Success!</strong>  {{ message }}</div>
+      {% endif %}
+      {% if warning %}
+        <div class="alert alert-danger"><strong>Something went wrong!</strong>  {{ warning }}</div>
+      {% endif %}
+      <div class="heading">
+        <h2>{{ticket.short_name}} - {{ ticket.name }}</h2>
+      </div>
+      <div>
+        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Edit</button>
+        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Delete</button>
+        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</button>
+      </div>
     </div>
-    <div>
-      <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Edit</button>
-      <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Delete</button>
-      <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</button>
+    <script>
+      function changeToInputFields(){
+        var fields = $('.ticket-detail-field.field-text')
+        fields.each(function (){
+          $(this).replaceWith("<input type='text' value='" + $(this).text() + "' id='" + this.id + "'>")
+        });
+
+        $('#description').replaceWith("<textarea>" + $('#description').text() + "</textarea>")
+        $('#editTicket').replaceWith("<button id='saveTicket' onclick='saveEdit()' class='btn btn-default'>Save</button>")
+      }
+
+      function saveEdit(){
+        saveTicketEdit({{ticket.id}});
+        $('#saveTicket').replaceWith("<button id='editTicket' onclick='changeToInputFields()' class='btn btn-default'>Edit</button>")
+      }
+    </script>
+
+    <div class="row ticket-detail-row">
+      <h4> Details </h4>
+      <hr></hr>
     </div>
-  </div>
-  <script>
-    function changeToInputFields(){
-      var fields = $('.ticket-detail-field.field-text')
-      fields.each(function (){
-        $(this).replaceWith("<input type='text' value='" + $(this).text() + "' id='" + this.id + "'>")
-      });
 
-      $('#description').replaceWith("<textarea>" + $('#description').text() + "</textarea>")
-      $('#editTicket').replaceWith("<button id='saveTicket' onclick='saveEdit()' class='btn btn-default'>Save</button>")
-    }
-
-    function saveEdit(){
-      saveTicketEdit({{ticket.id}});
-      $('#saveTicket').replaceWith("<button id='editTicket' onclick='changeToInputFields()' class='btn btn-default'>Edit</button>")
-    }
-  </script>
-
-  <div class="row ticket-detail-row">
-    <h4> Details </h4>
-    <hr></hr>
-  </div>
-
-  <div class="row">
-    <div class="col-xs-6">
-      <label>Title</label> <p id="ticket-name" class="ticket-detail-field field-text">{{ ticket.name }}</p> <br>
-      <label>Type</label> <p class="ticket-detail-field field-choice">{{ ticket.get_type_display }}</p> <br>
-      <label>Priority</label> <p class="ticket-detail-field field-choice">{{ ticket.get_priority_display }}</p><br>
-      <label>Status</label> <p class="ticket-detail-field field-choice">{{ ticket.get_state_display }}</p><br>
+    <div class="row">
+      <div class="col-xs-6">
+        <label>Title</label> <p id="ticket-name" class="ticket-detail-field field-text">{{ ticket.name }}</p> <br>
+        <label>Type</label> <p class="ticket-detail-field field-choice">{{ ticket.get_type_display }}</p> <br>
+        <label>Priority</label> <p class="ticket-detail-field field-choice">{{ ticket.get_priority_display }}</p><br>
+        <label>Status</label> <p class="ticket-detail-field field-choice">{{ ticket.get_state_display }}</p><br>
+      </div>
+      <div class="col-xs-6">
+        <label>Assigned To</label> <p class="ticket-detail-field field-text">{{ ticket.assigned_to.first_name }}</p> <br>
+        <label>Created On</label> <p class="ticket-detail-field">{{ ticket.created_on }} (UTC)</p><br>
+        <label>Last Updated</label> <p class="ticket-detail-field">{{ ticket.last_modified }} (UTC)</p><br>
+      </div>
     </div>
-    <div class="col-xs-6">
-      <label>Assigned To</label> <p class="ticket-detail-field field-text">{{ ticket.assigned_to.first_name }}</p> <br>
-      <label>Created On</label> <p class="ticket-detail-field">{{ ticket.created_on }} (UTC)</p><br>
-      <label>Last Updated</label> <p class="ticket-detail-field">{{ ticket.last_modified }} (UTC)</p><br>
+
+    <div class="row ticket-detail-row">
+      <h4> Description </h4>
+      <hr></hr>
     </div>
-  </div>
+    <div class="row">
+      {% if ticket.description %}
+        <p id="description"> {{ ticket.description }} </p>
+      {% else %}
+        <a> Click to add description</a>
+      {% endif %}
+    </div>
 
-  <div class="row ticket-detail-row">
-    <h4> Description </h4>
-    <hr></hr>
-  </div>
-  <div class="row">
-    {% if ticket.description %}
-      <p id="description"> {{ ticket.description }} </p>
-    {% else %}
-      <a> Click to add description</a>
-    {% endif %}
-  </div>
-
-  <div class="row ticket-detail-row">
-    <h4> Comments </h4>
-    <hr></hr>
-  </div>
-  <div class="row">
-    {% if comments %}
-      {% for comment in comments %}
-        {{ comment.content }}
-      {% endfor %}
-    {% endif %}
+    <div class="row ticket-detail-row">
+      <h4> Comments </h4>
+      <hr></hr>
+    </div>
+    <div class="row">
+      {% if comments %}
+        {% for comment in comments %}
+          {{ comment.content }}
+        {% endfor %}
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}

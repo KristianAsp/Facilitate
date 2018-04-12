@@ -1,13 +1,10 @@
 {%  extends 'UI/base.html' %}
 {% block content %}
 {% load widget_tweaks %}
-<div class= "row">
-  <div class="col-xs-12">
-    <div class="wrapper">
-      <div class ="col-xs-2">
-        {% include 'UI/sidebar.html' %}
-      </div>
-      <div class = "col-xs-5 profile" style = "background-color: #fff">
+{% include 'UI/sidebar.html' %}
+
+<div id="content">
+      <div class = "col-xs-6 profile" style = "background-color: #fff">
         <div id = "label">
         </div>
         <form class="form-horizontal" method="POST" action="{% url 'updateUserDetails' %}">
@@ -87,7 +84,7 @@
         {% endif %}
             <hr/>
       </div>
-      <div class = "col-xs-5 profile" style = "background-color: #fff">
+      <div class = "col-xs-6 profile" style = "background-color: #fff">
         <div>
           <h3 class="details-header">
             {% if request.user.id == user.id %}
@@ -101,6 +98,4 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
 {% endblock %}

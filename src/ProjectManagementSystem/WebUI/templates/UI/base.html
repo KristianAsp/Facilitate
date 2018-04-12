@@ -11,7 +11,7 @@
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bitter:400,700">
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700">
       <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-      <link rel="stylesheet" href='{% static "css/styles.css" %}'>
+      <link rel="stylesheet" href='{% static "css/NewStyles.css" %}'>
       <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
       <script src="https://use.fontawesome.com/19e158ee1c.js"></script>
       <script src='https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.min.js'></script>
@@ -22,49 +22,55 @@
 
   </head>
   <body>
-    <nav class="navbar navbar-original navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="/">APP NAME</a>
-        </div>
-        <ul class="nav navbar-nav">
-          <li class="active"><a href="/">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Features</a></li>
-          <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Support<span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="#">Technical Support</a></li>
-              <li><a href="#">Community Support</a></li>
-            </ul>
-          </li>
-          <li>
-          <form class="navbar-form" method="GET" action="{% url 'search' %}">
-            <div class="input-group">
-              <input size="60" id="search_query" type="text" class="form-control" placeholder="Search NAME" name="query">
-                <div class="input-group-btn">
-                  <button id="search-btn" class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
-                </div>
-              </div>
-            </form>
-          </li>
-        </ul>
-        <ul class="nav navbar-nav navbar-right">
-          {% if request.user.is_authenticated %}
-            {% include 'UI/navbars/logged_in_navbar.html' %}
-          {% else %}
-            {% include 'UI/navbars/logged_out_navbar.html' %}
-          {% endif %}
-        </ul>
-      </div>
-    </nav>
-
     <div class="wrapper">
+      <nav class="navbar navbar-original navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/">APP NAME</a>
+          </div>
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Features</a></li>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">Support<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Technical Support</a></li>
+                <li><a href="#">Community Support</a></li>
+              </ul>
+            </li>
+            <li>
+            <form class="navbar-form" method="GET" action="{% url 'search' %}">
+              <div class="input-group">
+                <input size="60" id="search_query" type="text" class="form-control" placeholder="Search NAME" name="query">
+                  <div class="input-group-btn">
+                    <button id="search-btn" class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                  </div>
+                </div>
+              </form>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% if request.user.is_authenticated %}
+              {% include 'UI/navbars/logged_in_navbar.html' %}
+            {% else %}
+              {% include 'UI/navbars/logged_out_navbar.html' %}
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
       {% block content %}
       {% endblock %}
     </div>
     {% if request.user.is_authenticated %}
       <script src='{% static "js/example.js" %}'></script>
     {% endif %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+            });
+        });
+    </script>
   </body>
 </html>

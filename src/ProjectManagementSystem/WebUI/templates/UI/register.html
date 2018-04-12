@@ -1,6 +1,7 @@
 {% extends 'UI/base.html' %}
 {% block content %}
-<div class="login-dark">
+
+<div id="content" class="login-dark">
   <form method="post" action=" {% url 'register_index' %}">
     {% csrf_token %}
     <h2 class="sr-only">Signup Form</h2>
