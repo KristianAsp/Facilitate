@@ -11,6 +11,15 @@
           {% csrf_token %}
           <div class="row">
             <div class="col-md-12">
+              {% if error %}
+              <div class="alert alert-danger">
+                <strong>Danger!</strong> {{ error }}
+              </div>
+              {% elif message %}
+              <div class="alert alert-success">
+                <strong>Success!</strong> {{ message }}.
+              </div>
+              {% endif %}
               <h3 class="details-header">
                 {% if request.user.id == user.id %}
                   Your personal details
@@ -81,8 +90,8 @@
               </div>
             </div>
           </form>
+          <hr/>
         {% endif %}
-            <hr/>
       </div>
       <div class = "col-xs-6 profile" style = "background-color: #fff">
         <div>

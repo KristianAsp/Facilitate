@@ -14,6 +14,17 @@ SECRET_KEY = '+d&256$q*g_qf)mxf5&t74$gml6=+nak52k(&*&ch@w6bj6n^u'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+
+# 2.5MB - 2621440
+# 5MB - 5242880
+# 10MB - 10485760
+# 20MB - 20971520
+# 50MB - 5242880
+# 100MB 104857600
+# 250MB - 214958080
+# 500MB - 429916160
+MAX_UPLOAD_SIZE = 5242880
 # Application definition
 
 INSTALLED_APPS = [
@@ -127,7 +138,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'var/files/uploads/')
+MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 LOGIN_URL = '/login' #Redirect to this URL whenever it fails the @login_required decorator check
 #LOGIN_REDIRECT_URL = '/login'

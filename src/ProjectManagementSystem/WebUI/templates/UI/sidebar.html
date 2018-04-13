@@ -1,4 +1,10 @@
 <nav id="sidebar">
+    <div class="navbar-header" style="float: right">
+        <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
+            <i class="glyphicon glyphicon-align-center"></i>
+        </button>
+    </div>
+    <br>
     <div class="sidebar-header">
         <h3>Project Application</h3>
         <strong>PA</strong>
@@ -22,23 +28,11 @@
         </li>
     </ul>
     <ul class ="list-unstyled components">
-        <li>
-            <a href='/dashboard/'>Dashboard</a>
-        </li>
-        <li>
-            <a href="{% url 'dashboard_ticket_view' %}">Tasks</a>
-        </li>
-        <li>
-            <a href="{% url 'project_settings' %}" >Boards</a>
-        </li>
-        <li>
-            <a href="{% url 'project_settings' %}">Settings</a>
-        </li>
+        <li><a href='/dashboard/'>Dashboard</a></li>
+        <li><a href="{% url 'dashboard_ticket_view' %}">Tasks</a></li>
+        <li><a href="{% url 'project_settings' %}" >Boards</a></li>
+        <li><a href="{% url 'upload_files' %}">Files</a></li>
+        <li><a href="{% url 'displayCalendar' %}">Calendar</a></li>
+        <li><a href="{% url 'project_settings' %}">Settings</a></li>
     </ul>
-    <div class="navbar-header">
-        <button type="button" id="sidebarCollapse" class="btn btn-info navbar-btn">
-            <i class="glyphicon glyphicon-align-left"></i>
-            <span>Toggle Sidebar</span>
-        </button>
-    </div>
 </nav>

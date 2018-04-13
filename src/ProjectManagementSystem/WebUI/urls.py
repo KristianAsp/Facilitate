@@ -2,6 +2,10 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from . import views
 from django.contrib.auth.views import logout
+from django.conf.urls.static import static
+from django.conf import settings
+
+
 
 handler404 = views.handler404
 
@@ -33,5 +37,7 @@ urlpatterns = [
     url(r'^dashboard/board/delete$', views.delete_board, name='delete_board'),
     url(r'^profile/update/$', views.updateUserDetails, name='updateUserDetails'),
     url(r'^profile/update/password$', views.updateUserPassword, name='updateUserPassword'),
+    url(r'^storage/files$', views.uploadFiles, name='upload_files'),
+    url(r'^project/calendar$', views.displayCalendar, name='displayCalendar'),
 
 ]

@@ -414,6 +414,13 @@ def view_user_profile(request, slug):
         context['matching_password_error'] = request.session['matching_password_error']
         del request.session['matching_password_error']
 
+    if 'message' in request.session:
+        context['message'] = request.session['message']
+        del request.session['message']
+    elif 'warning' in request.session:
+        content['warning'] = request.session['warning']
+        del request.session['warning']
+
     return render(request, 'UI/user/profile.html', context)
 
 def search(request):
@@ -617,8 +624,11 @@ def updateUserDetails(request):
             user.username = request.POST.get('username')
             user.email = request.POST.get('email')
             user.save()
+
+            request.session['message'] = "Your profile was successfully updated"
         except User.DoesNotExist:
             raise Http404
+            request.session['warning'] = "Something went wrong"
         return redirect('/' + request.user.username)
 
 def updateUserPassword(request):
@@ -640,3 +650,42 @@ def updateUserPassword(request):
             raise Http404
 
         return redirect('/' + request.user.username)
+
+
+def uploadFiles(request):
+    files = Document.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]))
+
+    if request.method == "GET":
+        form = DocumentUploadForm()
+        return render(request, 'UI/project/files/upload.html', { 'form' : form, 'files' : files })
+
+    elif request.method == "POST":
+        request.POST = request.POST.copy()
+        request.POST['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
+
+        form = DocumentUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return render(request, 'UI/project/files/upload.html', { 'files' : files, 'form' : DocumentUploadForm(), 'message' : 'The upload was successful.'})
+        return render(request, 'UI/project/files/upload.html', { 'files' : files, 'form' : form })
+
+def displayCalendar(request):
+    events = Event.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]))
+    if request.method == "GET":
+        form = NewEventForm()
+        return render(request, 'UI/project/calendar/calendar.html', { 'form' : form, 'events' : events })
+
+    elif request.method == "POST":
+        request.POST = request.POST.copy()
+
+        request.POST['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
+        request.POST['added_by'] = request.user.pk
+        request.POST['start_date'] = datetime.strptime(request.POST['start_date'], "%d/%m/%Y").date()
+        request.POST['end_date'] = datetime.strptime(request.POST['end_date'], "%d/%m/%Y").date()
+
+
+        form = NewEventForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'UI/project/calendar/calendar.html', { 'events' : events, 'form' : NewEventForm(), 'message' : 'The event was successfully created.'})
+        return render(request, 'UI/project/calendar/calendar.html', { 'events' : events, 'form' : form, 'warning' : 'Something went wrong when creating the event. Try again.' })

@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import User
 from WebAPI.choices import *
-from datetime import datetime
+from datetime import datetime, date
 
 
 #####
@@ -122,6 +122,30 @@ class Comment(models.Model):
     content = models.TextField()
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True)
+
+def project_directory_path(instance, filename):
+    return settings.MEDIA_ROOT + 'documents/project_{0}/{1}'.format(instance.project.id, filename)
+
+class Event(models.Model):
+    event_title = models.CharField(max_length=255, default="Untitled")
+    type = models.CharField(
+        max_length=1,
+        choices=EVENT_TYPE_CHOICES,
+        default=EVENT_TYPE_CHOICES[0][0]
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    added_by = models.ForeignKey(User)
+    description = models.TextField()
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+class Document(models.Model):
+    document_name = models.CharField(max_length=200)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    description = models.CharField(max_length=255, blank=True)
+    document = models.FileField(upload_to=project_directory_path, max_length=700)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    associated_event = models.ForeignKey(Event, blank=True, null=True)
 
 
 @receiver(post_save, sender=Board)

@@ -1,0 +1,50 @@
+{%  extends 'UI/base.html' %}
+{% block content %}
+{% include 'UI/sidebar.html' %}
+  <div id ="content">
+  <div class= "row new_project">
+    <div class ="container new_project">
+
+      <div class="heading">
+        <h2>File Storage</h2>
+        {% if message %}
+          <div class="alert alert-success">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>Success!</strong>  {{ message }}
+          </div>
+        {% endif %}
+        <p class="heading-description">Upload a new file to storage.</p>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="Description">Document Name:</label>
+          {{ form.document_name }}
+          {{ form.errors.document_name }}
+        </div>
+        <div class="form-group">
+          <label for="Description">Description:</label>
+          {{ form.description }}
+          {{ form.errors.description }}
+        </div>
+
+        <div class="form-group">
+          <label for="Description">File:</label>
+          {{ form.document }}
+          {{ form.errors.document }}
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+
+      <p>Download Files</p>
+
+      {% for file in files %}
+        <a href="file:///{{ file.document }}" download> {{ file.document_name }} {{ file.document.name }}</a><br>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

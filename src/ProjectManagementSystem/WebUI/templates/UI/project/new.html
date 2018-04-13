@@ -5,13 +5,17 @@
 <div id="content">
   <div class= "row new_project">
     <div class ="container new_project">
-      {% if message %}
-        <div class="alert alert-success"><strong>Success!</strong>  {{ message }}</div>
-      {% endif %}
+
       <div class="heading">
         <h2>Create a new project</h2>
         <p class="heading-description">A project contains all the initial settings needed. Participants can be added manually later or through the automated invitation system.</p>
       </div>
+      {% if message %}
+        <div class="alert alert-success">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>Success!</strong>  {{ message }}
+        </div>
+      {% endif %}
       <hr></hr>
 
     <form action="{% url 'new_project' %}" method="post">

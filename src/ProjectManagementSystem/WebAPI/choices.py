@@ -23,3 +23,9 @@ ACTIVITY_CHOICES = (
     ('CO', 'Comment'),
     ('CR', 'Create'),
 )
+
+EVENT_TYPE_CHOICES = (
+    ('D', 'Project Deadline'),
+    ('H', 'Holiday'),
+    ('S', 'Submission'),
+)

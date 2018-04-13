@@ -1,7 +1,7 @@
 {%  extends 'UI/base.html' %}
 {% block content %}
 {% include 'UI/sidebar.html' %}
-<div id="content" class ="content ticketcolumns" style = "background-color: #fff">
+<div id="content" class ="content ticketcolumns">
   {% if request.session.active_project %}
     <div class="row">
       <div class="dropdown" style="float: right;">

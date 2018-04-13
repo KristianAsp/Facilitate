@@ -2,14 +2,20 @@
 
 {% block content %}
 {% include 'UI/sidebar.html' %}
-  <div id="content">
+<div id="content">
   <div class="container">
     <div class= "row ticket-title">
       {% if message %}
-        <div class="alert alert-success"><strong>Success!</strong>  {{ message }}</div>
+        <div class="alert alert-success">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>Success!</strong>  {{ message }}
+        </div>
       {% endif %}
       {% if warning %}
-        <div class="alert alert-danger"><strong>Something went wrong!</strong>  {{ warning }}</div>
+        <div class="alert alert-danger">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>Something went wrong!</strong>  {{ warning }}
+        </div>
       {% endif %}
       <div class="heading">
         <h2>{{ticket.short_name}} - {{ ticket.name }}</h2>
