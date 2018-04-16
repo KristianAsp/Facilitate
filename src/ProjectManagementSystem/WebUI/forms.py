@@ -63,13 +63,13 @@ class RegisterForm(forms.ModelForm):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'short_name', 'visibility']
+        fields = ['name', 'description', 'visibility']
 
     name = forms.CharField(max_length=100)
     name.widget.attrs.update({'class' : 'form-control'})
 
-    short_name = forms.CharField(max_length=100)
-    short_name.widget.attrs.update({'class' : 'form-control'})
+    description = forms.CharField(max_length=1000)
+    description.widget.attrs.update({'class' : 'form-control'})
 
 class NewTicketForm(forms.Form):
     name = forms.CharField(max_length=100, required = True)
@@ -159,3 +159,16 @@ class NewEventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = ('event_title', 'type', 'start_date', 'end_date', 'added_by', 'description', 'project')
+
+class NewStateForm(forms.ModelForm):
+    name = forms.CharField()
+    name.widget.attrs.update({'class' : 'form-control'})
+    name.widget.attrs.update({'id' : 'state_name'})
+
+    short_name = forms.CharField()
+    short_name.widget.attrs.update({'class' : 'form-control'})
+    short_name.widget.attrs.update({'id' : 'state_short_name'})
+
+    class Meta:
+        model = State
+        fields = ('name', 'short_name', 'order', 'board')

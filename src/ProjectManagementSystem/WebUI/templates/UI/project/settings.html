@@ -76,6 +76,7 @@
       <hr/>
     </form>
     <form action= {% url 'delete_project' %} method = "POST">
+      {% csrf_token %}
       <button type="submit" class="btn btn-default" onclick="return confirm('Are you sure you want to delete the project?')" style="display: inline">Delete Project</button>
     </form>
   </div>

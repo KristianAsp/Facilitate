@@ -1,39 +1,47 @@
 {%  extends 'UI/base.html' %}
+
+
 {% block content %}
 {% include 'UI/sidebar.html' %}
 <div id="content" class ="content ticketcolumns">
   {% if request.session.active_project %}
     <div class="row">
-      <div class="dropdown" style="float: right;">
-        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Boards
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
+      <div class="btn-group board-btn-group" style="float: left">
+        <a class="btn btn-default board-btn">
+          <span class="selection">
+            {% if boards %}
+              {% for board in boards %}
+                {% if request.session.active_board|add:0 == board.id %}
+                  {{ board.title }}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </span>
+        </a>
+        <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
+        <ul class="dropdown-menu" role="menu">
           {% if boards %}
             {% for board in boards %}
-              <li><a href="{% url 'update_board_display' pk=board.id %}" {% if request.session.active_board|add:0 == board.id %} style="background-color:black;" {% endif %} >{{ board.title }}</a></li>
+              <li  {% if request.session.active_board|add:0 == board.id %} class="active" {% endif %}><a href="{% url 'update_board_display' pk=board.id %}?next={{ request.path|urlencode }}">{{ board.title }}</a></li>
             {% endfor %}
           {% endif %}
         </ul>
-        <button class="btn btn-primary" type="button" onclick="displayStateButtons()">Edit Board</button>
-        <a href = "{% url 'new_board' %}" class="btn btn-primary" type="submit">New Board</a>
-        <a href = "{% url 'new_ticket_view' %}" class="btn btn-primary" type="submit">New task</a>
       </div>
-    </div>
-    <div class="row">
-      <div class="editState-row">
-          <input type="text" size="30" value="{{ current_board_name }}">
-          <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Add State
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu">
-            {% if missing_states %}
-              {% for state in missing_states %}
-              <li><a href="" >{{ state.name }}</a></li>
-              {% endfor %}
-            {% endif %}
-          </ul>
-          <a href = "{% url 'delete_board' %}" class="btn btn-primary" type="submit">Delete Board</a>
+      <div class="dropdown" style="float: right;">
+        <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Board<span class="caret"></span></button>
+        <ul class="dropdown-menu dropdown-menu-left">
+          <li>
+            <a class="" type="button" href="{% url 'displayBoardSettings' %}">Configure Board</a>
+          </li>
+          <li class="divider">
+          </li>
+          <li>
+            <a href = "{% url 'new_board' %}" class="" type="submit">New Board</a>
+          </li>
+          <li>
+            <a href = "{% url 'new_ticket_view' %}" class="" type="submit">New task</a>
+          </li>
+        </ul>
       </div>
     </div>
     <div class ="state-row">
@@ -42,33 +50,17 @@
       <div class="individual-state-column">
         <div class="ticket-headers {% if state.short_name == 'BL'  or state.short_name == 'C'  %}ticket-headers-block {% else %} ticket-headers-slim {% endif %}">
           {% if state.short_name == "BL" or state.short_name == "C" %}
-            <h5 style="line-height: 5.2em;">{{ state.name }}
-            {% for k,v in stateCounts.0.items %}
-              {% if k == state.short_name %}
-                <div style="display: inline" class="state-count">({{ v }})</div>
-              {% endif %}
-            {% endfor %}
-            </h5>
+            <h5 style="line-height: 5.2em;">{{ state.name }}</h5>
+            <h5 class="count"></h5>
           {% endif  %}
         </div>
         {% if state.short_name != "BL" and state.short_name != "C" %}
-          <div class="ticket-headers-bottom" {% if state.short_name == "BL" or state.short_name == "C" %} style="margin-left: 0.2em; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% else  %} style="margin-left: unset; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% endif %}>
-            <h5> {{ state.name }}
-            {% for key, value in stateCounts.0.items %}
-              {% if key == state.short_name %}
-                <div style="display: inline" class="state-count">({{ value }})</div>
-              {% endif %}
-            {% endfor %}
-          </h5>
+          <div {% if state.short_name == "BL" or state.short_name == "C" %} class="ticket-headers-bottom" style="margin-left: 0.2em; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% else  %} class="ticket-headers-bottom in-progress-header" {% endif %}>
+            <h5>{{ state.name }} </h5>
+            <h5 class="count"></h5>
           </div>
         {% endif %}
         <div class="col-xs-12 ticket-column" id="{{ state.short_name }}">
-          {% if state.short_name != "BL"  and state.short_name != "C" %}
-            <div class="row">
-              <button id="edit_{{state.short_name}}" class="editBtn-State btn btn-primary" type="button">Edit</button>
-              <a id="delete{{state.short_name}}" class="deleteBtn-State btn btn-primary" href="{% url 'delete_state' pk=request.session.active_board slug=state.short_name %}"type="button">Delete</a>
-            </div>
-          {% endif %}
           {% if tickets %}
             {% for ticket in tickets %}
               {%  if ticket.state == state.short_name %}
@@ -143,7 +135,10 @@
   var shouldUpdateConcurrently = true
   var f = concurrencyUpdateBoard
   setInterval(f, 2000);
-
-
+  updateNumberOfTasksInStates()
+  $(".dropdown-menu li a").click(function(){
+    $(this).parents(".btn-group").find('.selection').text($(this).text());
+    $(this).parents(".btn-group").find('.selection').val($(this).text());
+  });
 </script>
 {% endblock %}

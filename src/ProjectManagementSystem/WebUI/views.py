@@ -6,7 +6,6 @@ from django.shortcuts import render, redirect
 from django.template import loader
 from django.http import HttpResponse, JsonResponse, QueryDict, HttpResponseRedirect, HttpResponseBadRequest, Http404
 from django.core.serializers.json import DjangoJSONEncoder
-from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string, get_template
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -180,7 +179,6 @@ def new_project(request):
 
             return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully created' })
 
-@csrf_exempt
 def delete_project(request):
     if request.method == "POST":
         data = { 'Authorization' : 'Token ' + request.session['auth']}
@@ -214,7 +212,6 @@ def dashboard_project_view(request, pk):
             'missing_states' : getMissingDefaultStates(request),
             'current_board_name' : Board.objects.get(pk = request.session['active_board']).title,
             }
-    data['stateCounts'] = getStateCounts(request, data['states'])
     template = loader.get_template('UI/user/dashboard.html')
     return HttpResponse(template.render(data, request))
 
@@ -229,14 +226,6 @@ def getStateCounts(request, states):
         return context
     return None
 def getTickets(request):
-    #rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets"
-
-    #data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
-    #try:
-    #    ro = requests.get(rootURL, headers = data)
-    #    return ro.json()
-    #except ValueError:
-    #    return {}
     try:
         tickets = Ticket.objects.filter(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])).order_by('priority')
         return tickets
@@ -245,9 +234,8 @@ def getTickets(request):
 
 def getStates(request):
     if ACTIVE_PROJECT_ACCESSOR in request.session:
-        board = request.session['active_board']
-        board_object = Board.objects.get(id = board)
-        states = State.objects.filter(board = board_object)
+        board_object = Board.objects.get(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True)
+        states = State.objects.filter(board = board_object).order_by('order')
         return states
     return None
 
@@ -278,7 +266,11 @@ def dashboard_ticket_view(request):
     data = {
         'projects' : getProjects(request),
         'tickets' : getTickets(request),
+        'type_choices' : TYPE_CHOICES,
+        'priority_choices' : PRIORITY_CHOICES,
+        'state_choices' : STATE_CHOICES,
         'table' : table,
+        'users' : getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR]),
         }
     return render(request, 'UI/project/tasklist.html', data)
 
@@ -542,14 +534,23 @@ def send_email(template, recipients, subject, **kwargs):
     email.content_subtype = 'html'
     email.send()
 
-@csrf_exempt
 def ticket_detail(request, slug):
+    context = {}
     if request.method == "GET":
         try:
             ticket = Ticket.objects.get(pk = slug)
+            context = {
+                        'ticket' : ticket,
+                        'type_choices' : TYPE_CHOICES,
+                        'priority_choices' : PRIORITY_CHOICES,
+                        'states' : getStates(request),
+                        }
+            if 'error' in request.session:
+                context['error'] = request.session['error']
+                del request.session['error']
         except Ticket.DoesNotExist:
             raise Http404
-        return render(request, 'UI/project/tickets/detail_view.html', { 'ticket' : ticket })
+        return render(request, 'UI/project/tickets/detail_view.html', context)
     elif request.method == "PUT":
         data_arr = {}
         try:
@@ -571,13 +572,48 @@ def ticket_detail(request, slug):
         except Ticket.DoesNotExist:
             raise Http404
         return JsonResponse(data_arr)
+    elif request.method == "POST":
+        ticket = Ticket.objects.get(pk = int(slug))
+        ticket.name = request.POST.get('ticket_name')
+        ticket.state = State.objects.get(board = Board.objects.get(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True), name = request.POST.get('ticket_state')).short_name
+        ticket.description = request.POST.get('description')
+        for i in range(0, len(PRIORITY_CHOICES)):
+            if PRIORITY_CHOICES[i][1] == request.POST.get('ticket_priority'):
+                ticket.priority = PRIORITY_CHOICES[i][0]
+                break
+
+        for i in range(0, len(TYPE_CHOICES)):
+            if TYPE_CHOICES[i][1] == request.POST.get('ticket_type'):
+                ticket.type = TYPE_CHOICES[i][0]
+                break
+
+        if(request.POST.get('ticket_assigned_to') != 'Unassigned' ):
+            try:
+                profile = Profile.objects.get(user = User.objects.get(username = request.POST.get('ticket_assigned_to')))
+                if not profile.projects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]):
+                    raise Profile.DoesNotExist
+                else:
+                    ticket.assigned_to = profile.user
+                    ticket.save()
+            except (Profile.DoesNotExist, Project.DoesNotExist):
+                request.session['error'] = "There is no user with that username working on this project. Please try with a different username."
+        else:
+            ticket.save()
+        return redirect('/project/tickets/detail/' + slug + '/')
 
 
-def delete_state(request, pk, slug):
-    board = Board.objects.get(pk = pk)
-    state = State.objects.get(board = board, short_name = slug)
-    state.delete()
-    return HttpResponseRedirect("/dashboard/")
+def delete_state(request, slug):
+    if request.method == "POST":
+        board = Board.objects.get(pk = request.session['active_board'])
+        state = State.objects.get(board = board, short_name = slug)
+        state.delete()
+        if(board.default == True):
+            boards = Board.objects.filter(project = board.project)
+            states = State.objects.filter(board__in = boards, short_name = slug)
+            states.delete()
+        request.session['next'] = '#States'
+        return HttpResponseRedirect("/project/boards")
+    return HttpResponseRedirect("/project/boards")
 
 def new_board(request):
     board = Board(owner = request.user, default = False, project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), title="Copy of Default Board")
@@ -593,7 +629,9 @@ def delete_board(request):
 
 def update_board_display(request, pk):
     request.session['active_board'] = pk
-    return HttpResponseRedirect("/dashboard/")
+    nextURL = request.GET.get('next', '/')
+
+    return HttpResponseRedirect(nextURL)
 
 def project_ticket_changes(request):
     last_modified = request.GET['last_modified']
@@ -627,8 +665,8 @@ def updateUserDetails(request):
 
             request.session['message'] = "Your profile was successfully updated"
         except User.DoesNotExist:
-            raise Http404
             request.session['warning'] = "Something went wrong"
+            raise Http404
         return redirect('/' + request.user.username)
 
 def updateUserPassword(request):
@@ -645,8 +683,10 @@ def updateUserPassword(request):
                 user = authenticate(request, username = user.username, password = request.POST.get('password'))
                 if user is not None:
                     login(request, user)
+                    request.session['message'] = "Your password was successfully updated"
                     request.session['auth'] = get_auth_token(request, username = user.username, password = request.POST.get('password'))
         except User.DoesNotExist:
+            request.session['warning'] = "Something went wrong"
             raise Http404
 
         return redirect('/' + request.user.username)
@@ -689,3 +729,63 @@ def displayCalendar(request):
             form.save()
             return render(request, 'UI/project/calendar/calendar.html', { 'events' : events, 'form' : NewEventForm(), 'message' : 'The event was successfully created.'})
         return render(request, 'UI/project/calendar/calendar.html', { 'events' : events, 'form' : form, 'warning' : 'Something went wrong when creating the event. Try again.' })
+
+def displayBoardSettings(request):
+    active_board = Board.objects.get(pk = request.session['active_board'])
+    context = {
+                'boards' : getBoards(request),
+                'active_board' : active_board,
+                'states' : State.objects.filter(board = active_board).order_by('order'),
+                'missing_states' : getMissingDefaultStates(request),
+                'form' : NewStateForm(),
+                'next' : request.session.get('next', '')
+            }
+    if 'next' in request.session:
+        del request.session['next']
+    return render(request, 'UI/project/boards/settings.html', context)
+
+def updateStateOrder(request):
+    context = {}
+    try:
+        active_board = Board.objects.get(pk = request.session['active_board'])
+        stateIDs = request.POST.get('data').split(", ")
+        states = State.objects.filter(id__in = stateIDs)
+        for state in states:
+            state.order = stateIDs.index(str(state.pk)) + 1
+            state.save()
+    except:
+        context['error'] = "Something went wrong when trying to update the order. Please refresh and try again."
+    return JsonResponse(context)
+
+def newState(request):
+    if request.method == "POST":
+        context = {}
+        try:
+            state = State(name = request.POST.get('name'), short_name = request.POST.get('short_name'), board = Board.objects.get(pk = request.session['active_board']), order = 100)
+            state.save()
+            context['state_id'] = state.pk
+            context['name'] = state.name
+            context['short_name'] = state.short_name
+        except:
+            context['error'] = "Something went wrong when trying to create the new state. Please refresh and try again."
+        return JsonResponse(context, safe = False)
+
+    elif request.method == "GET":
+        return redirect('/project/boards')
+
+def copyStateToSubBoard(request, pk):
+    if request.method == "POST":
+        context = {}
+        try:
+            originalState = State.objects.get(pk = pk)
+            state = State(name = originalState.name, short_name = originalState.short_name, board = Board.objects.get(pk = request.session['active_board']), order = 100)
+            state.save()
+            context['state_id'] = state.pk
+            context['name'] = state.name
+            context['short_name'] = state.short_name
+        except:
+            context['error'] = "Something went wrong when trying to create the new state. Please refresh and try again."
+        return JsonResponse(context, safe = False)
+
+    elif request.method == "GET":
+        return redirect('/project/boards')

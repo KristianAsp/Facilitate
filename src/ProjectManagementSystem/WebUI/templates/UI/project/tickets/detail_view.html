@@ -11,68 +11,94 @@
           <strong>Success!</strong>  {{ message }}
         </div>
       {% endif %}
-      {% if warning %}
+      {% if error %}
         <div class="alert alert-danger">
           <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Something went wrong!</strong>  {{ warning }}
+          <strong>Something went wrong!</strong>  {{ error }}
         </div>
       {% endif %}
       <div class="heading">
         <h2>{{ticket.short_name}} - {{ ticket.name }}</h2>
       </div>
       <div>
-        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Edit</button>
-        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Delete</button>
-        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</button>
+        <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Edit <span class='glyphicon glyphicon-pencil'></span></button>
+        <button id='saveTicket' onclick='saveEdit()' class='btn btn-default'>Save <span class='glyphicon glyphicon-ok'></span></button>
+        <button id='cancelEditTicket' onclick='changeToTextFields()' class='btn btn-default'>Cancel <span class='glyphicon glyphicon-remove'></span></button>
+        <button id="editTicket" onclick="" class="btn btn-default">Delete</button>
+        <button id="editTicket" onclick="" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</button>
       </div>
     </div>
-    <script>
-      function changeToInputFields(){
-        var fields = $('.ticket-detail-field.field-text')
-        fields.each(function (){
-          $(this).replaceWith("<input type='text' value='" + $(this).text() + "' id='" + this.id + "'>")
-        });
-
-        $('#description').replaceWith("<textarea>" + $('#description').text() + "</textarea>")
-        $('#editTicket').replaceWith("<button id='saveTicket' onclick='saveEdit()' class='btn btn-default'>Save</button>")
-      }
-
-      function saveEdit(){
-        saveTicketEdit({{ticket.id}});
-        $('#saveTicket').replaceWith("<button id='editTicket' onclick='changeToInputFields()' class='btn btn-default'>Edit</button>")
-      }
-    </script>
-
     <div class="row ticket-detail-row">
       <h4> Details </h4>
       <hr></hr>
     </div>
-
+    <form id="task-form" action="{% url 'ticket_detail' slug=ticket.pk %}" method="POST">
     <div class="row">
-      <div class="col-xs-6">
-        <label>Title</label> <p id="ticket-name" class="ticket-detail-field field-text">{{ ticket.name }}</p> <br>
-        <label>Type</label> <p class="ticket-detail-field field-choice">{{ ticket.get_type_display }}</p> <br>
-        <label>Priority</label> <p class="ticket-detail-field field-choice">{{ ticket.get_priority_display }}</p><br>
-        <label>Status</label> <p class="ticket-detail-field field-choice">{{ ticket.get_state_display }}</p><br>
-      </div>
-      <div class="col-xs-6">
-        <label>Assigned To</label> <p class="ticket-detail-field field-text">{{ ticket.assigned_to.first_name }}</p> <br>
-        <label>Created On</label> <p class="ticket-detail-field">{{ ticket.created_on }} (UTC)</p><br>
-        <label>Last Updated</label> <p class="ticket-detail-field">{{ ticket.last_modified }} (UTC)</p><br>
-      </div>
+        {% csrf_token %}
+        <div class="col-xs-6 edit-ticket-detail">
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Title</label> <p id="ticket-name" class="ticket-detail-field field-text">{{ ticket.name }}</p>
+            <input name="ticket_name" id="ticket_name" class='form-control input-field' type='text' value='{{ticket.name}}'>
+            <br>
+          </div>
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Type</label> <p class="ticket-detail-field field-choice">{{ ticket.get_type_display }}</p>
+            <select name="ticket_type" id="ticket_type" class="form-control input-field" id="sel1">
+              {% for k, v in type_choices %}
+                <option {% if ticket.type == k %} selected {% endif %}>{{ v }}</option>
+              {% endfor %}
+            </select>
+            <br>
+          </div>
+          <div class="form-group">
+            <label class="ticket-detail-field-label" >Priority</label> <p class="ticket-detail-field field-choice">{{ ticket.get_priority_display }}</p>
+            <select name="ticket_priority" id="ticket_priority" class="form-control input-field" id="sel1">
+              {% for k, v in priority_choices %}
+                <option {% if ticket.priority == k %} selected {% endif %}>{{ v }}</option>
+              {% endfor %}
+            </select>
+            <br>
+          </div>
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Status</label> <p class="ticket-detail-field field-choice">{{ ticket.get_state_display }}</p>
+            <select name="ticket_state" id="ticket_state" class="form-control input-field" id="sel1">
+              {% for state in states %}
+                <option {% if ticket.state == state.short_name %} selected {% endif %}>{{ state.name }}</option>
+              {% endfor %}
+            </select>
+            <br>
+          </div>
+        </div>
+        <div class="col-xs-6 edit-ticket-detail">
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Assigned To</label> <p class="ticket-detail-field field-text">{% if ticket.assigned_to %}{{ticket.assigned_to}}{% else %}Unassigned{% endif %}</p>
+            <input name="ticket_assigned_to" id="ticket_name" class='form-control input-field' type='text' value='{% if ticket.assigned_to %}{{ ticket.assigned_to}}{% else %}Unassigned{% endif %}'>
+            <br>
+          </div>
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Created On</label> <p class="ticket-detail-field immutable">{{ ticket.created_on }} (UTC)</p><br>
+          </div>
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Last Updated</label> <p class="ticket-detail-field immutable">{{ ticket.last_modified }} (UTC)</p><br>
+          </div>
+        </div>
     </div>
-
     <div class="row ticket-detail-row">
       <h4> Description </h4>
       <hr></hr>
     </div>
     <div class="row">
-      {% if ticket.description %}
-        <p id="description"> {{ ticket.description }} </p>
-      {% else %}
-        <a> Click to add description</a>
-      {% endif %}
+      <div class="form-group">
+        {% if ticket.description %}
+          <p id="description" class="ticket-detail-field"> {{ ticket.description }} </p>
+        {% else %}
+          <p class="ticket-detail-field"> No description added</p>
+        {% endif %}
+      </div>
+      <textarea name="description" id="description" class="form-control input-field">{{ticket.description}}</textarea>
     </div>
+  </form>
+
 
     <div class="row ticket-detail-row">
       <h4> Comments </h4>
@@ -87,4 +113,13 @@
     </div>
   </div>
 </div>
+<script>
+$(document).ready(function(){
+  $('.input-field').hide()
+  $('#saveTicket').hide()
+  $('#cancelEditTicket').hide()
+})
+
+  
+</script>
 {% endblock %}

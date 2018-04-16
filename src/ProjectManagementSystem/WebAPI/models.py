@@ -23,6 +23,7 @@ class Project(models.Model):
     short_name = models.CharField(max_length=30, null = True, blank = True)
     owner = models.ForeignKey(User)
     visibility = models.BooleanField(default = False) #True for a public project, false for a private
+    description = models.TextField()
 
     def __str__(self):
         return self.name
@@ -44,7 +45,7 @@ class Board(models.Model):
 class State(models.Model):
     name = models.CharField(max_length=30)
     short_name = models.CharField(max_length = 5)
-    order = models.IntegerField()
+    order = models.IntegerField(blank = True, null = True, default = -1)
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
 
 class Profile(models.Model):
@@ -53,13 +54,10 @@ class Profile(models.Model):
     joined = models.DateTimeField(auto_now_add=True, blank=True, null = True)
     reset_password_hash = models.CharField(max_length = 50, blank = True, null=True)
 
-    def __str__(self):
-        return self.user.username
-
 class Ticket(models.Model):
     name = models.CharField(max_length=300)
     short_name = models.CharField(max_length=30, blank = True, null = True)
-    description = models.TextField(default = "")
+    description = models.TextField(blank = True, null = True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now = True)
     created_on = models.DateTimeField(auto_now_add=datetime.now())

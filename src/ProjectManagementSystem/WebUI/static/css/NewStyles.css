@@ -324,14 +324,35 @@ a.article, a.article:hover {
   min-height: 40em;
 }
 
+.ticket-column form {
+  display: inline;
+}
+
 .ticket-headers h5, .ticket-headers-bottom h5 {
   margin: unset;
+  display: inline;
 }
 
 .ticket-headers-bottom h5 {
   line-height: 2.5em;
 }
 
+.board-btn, .board-btn-group button, .board-btn:hover{
+  font-size: 25px;
+  background-color: unset;
+  border-color: transparent;
+}
+
+.board-btn:hover {
+  cursor:auto;
+}
+
+.in-progress-header {
+  margin-left: unset;
+  margin-right: 0.2em;
+  height: 2.5em;
+  background-color: #ADD8E6
+}
 
 /* ---------------------------------------------------
     TICKET CSS
@@ -361,6 +382,35 @@ a.article, a.article:hover {
   height: 7vh;
   margin: 0px;
 }
+
+
+
+/* ---------------------------------------------------
+    TICKET DETAIL CSS
+----------------------------------------------------- */
+.ticket-detail-field{
+  display: inline;
+}
+
+.ticket-detail-field-label{
+  min-width: 10em;
+}
+
+.edit-ticket-detail .form-group{
+  margin-bottom: 10px;
+}
+
+.edit-ticket-detail .form-control {
+  display: unset;
+  width: 15em;
+}
+
+.ticket-detail-row hr{
+  margin-top: unset;
+  margin-bottom: 10px;
+  border-top: 1px solid #CCC;
+}
+
 
 /* ---------------------------------------------------
     DRAGULA CSS
@@ -472,5 +522,77 @@ a.article, a.article:hover {
 }
 
 /* ---------------------------------------------------
-    CALENDAR CSS
+    TICKET LIST CSS
 ----------------------------------------------------- */
+.ticketTableColumn {
+  padding-right: 1em;
+}
+
+.ticketTable {
+  width: -webkit-fill-available;
+}
+
+
+/* ---------------------------------------------------
+    BOARD SETTINGS CSS
+----------------------------------------------------- */
+.board-settings {
+  margin-top: 3vh;
+}
+
+.hidden-setting{
+  display: none;
+}
+
+.display-setting{
+  display: block;
+}
+
+.state form {
+  margin-top: 0;
+  display: unset;
+}
+
+.state form button, .dropdown-menu button {
+  padding: 0;
+  border-color: unset;
+  border-style: unset;
+  border-width: 0;
+}
+
+.state form button {
+  font-size: 17px;
+}
+
+.dropdown-menu button {
+  padding: 3px 20px !important;
+}
+
+.state-button-row {
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+.page-heading .btn {
+  padding: 0;
+}
+
+.page-heading button {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 22px;
+}
+
+.btn-edit-board {
+  font-size: 12px;
+  padding: 3px 6px;
+}
+
+#general-settings .form-control{
+  display: inline-block;
+  width:auto;
+}
+
+#general-settings p {
+  display: inline;
+}

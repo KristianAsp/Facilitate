@@ -10,13 +10,13 @@
         <form class="form-horizontal" method="POST" action="{% url 'updateUserDetails' %}">
           {% csrf_token %}
           <div class="row">
-            <div class="col-md-12">
+            <div class="">
               {% if error %}
-              <div class="alert alert-danger">
+              <div class="col-xs-11 alert alert-danger">
                 <strong>Danger!</strong> {{ error }}
               </div>
               {% elif message %}
-              <div class="alert alert-success">
+              <div class="col-xs-11 alert alert-success">
                 <strong>Success!</strong> {{ message }}.
               </div>
               {% endif %}
@@ -62,7 +62,7 @@
           <form class="form-horizontal" method="POST" action="{% url 'updateUserPassword' %}">
           {% csrf_token %}
             <div class="row">
-              <div class="col-md-12">
+              <div class="">
                 <h3>Password Settings</h3>
                 <p class = "subheading">Update your password</p>
                 {% if current_password_error %}

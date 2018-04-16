@@ -30,9 +30,11 @@
     <ul class ="list-unstyled components">
         <li><a href='/dashboard/'>Dashboard</a></li>
         <li><a href="{% url 'dashboard_ticket_view' %}">Tasks</a></li>
-        <li><a href="{% url 'project_settings' %}" >Boards</a></li>
+        <li><a href="{% url 'displayBoardSettings' %}" >Boards</a></li>
         <li><a href="{% url 'upload_files' %}">Files</a></li>
         <li><a href="{% url 'displayCalendar' %}">Calendar</a></li>
-        <li><a href="{% url 'project_settings' %}">Settings</a></li>
+        {% if request.session.is_owner == True %}
+          <li><a href="{% url 'project_settings' %}">Settings</a></li>
+        {% endif %}
     </ul>
 </nav>

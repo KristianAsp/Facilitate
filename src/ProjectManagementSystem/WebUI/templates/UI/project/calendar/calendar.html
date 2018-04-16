@@ -43,6 +43,7 @@
                   title: "{{ i.event_title}}",
                   start: '{{ i.start_date|date:"Y-m-d" }}',
                   end: '{{ i.end_date|date:"Y-m-d" }}',
+
                   {% if i.type == 'S' %}
                     backgroundColor: '#77A0A9',
                     borderColor: '#77A0A9',

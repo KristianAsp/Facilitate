@@ -1,12 +1,6 @@
-
-var x = document.getElementsByClassName("ticket-column");
 var availableTags = fetchUsersForProject()
+var x = document.getElementsByClassName("ticket-column");
 
-function populateAvailableTags(){
-  $(".assigned_to").autocomplete({
-    source: availableTags,
-  });
-}
 dragula(Array.from(x), {
           moves: function(el, container, handle){
             var res = $(el).is('.unique-ticket')
@@ -49,6 +43,13 @@ dragula(Array.from(x), {
 function lol(id) {
   return document.getElementById(id);
 }
+
+function populateAvailableTags(){
+  $(".assigned_to").autocomplete({
+    source: availableTags,
+  });
+}
+
 
 
 function validateUpdate(){
