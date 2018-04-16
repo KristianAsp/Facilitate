@@ -74,3 +74,37 @@ function changeToTextFields(){
 function saveEdit(){
   $('#task-form').submit()
 }
+
+function updateOrderOfStates(){
+  var statesInOrder = $('.state').filter(":not(.gu-mirror)")
+  var data = ""
+  var labels = [];
+  statesInOrder.each(function(){
+    labels.push($(this).data('id'))
+  })
+  data = labels.join(', ')
+  sendUpdateToDB(data)
+}
+
+function openNewStateModal(){
+  $('#newStateModal').modal('show')
+}
+
+function addNewStateRow(){
+  var name = $('#state_name').val()
+  var short_name = $('#state_short_name').val()
+  $('#newStateModal').modal('hide')
+
+  addNewState(name, short_name)
+  updateOrderOfStates()
+}
+
+
+function changeSettingTab(button){
+  var attribute = $(button).data('attribute')
+  var element = $(".board-settings[data-tab=" + attribute + "]").removeClass('hidden-setting').addClass('display-setting')
+  var elements = $(".board-settings:not([data-tab=" + attribute + "])").removeClass('display-setting').addClass('hidden-setting')
+
+  $('.nav-tabs li').removeClass('active')
+  $(button.parentNode).addClass('active')
+}
