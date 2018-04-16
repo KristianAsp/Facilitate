@@ -145,11 +145,6 @@ class Document(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     associated_event = models.ForeignKey(Event, blank=True, null=True)
 
-class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-
 @receiver(post_save, sender=Board)
 def create_states_for_board(sender, instance=None, created=False, **kwargs):
     if created:
