@@ -56,23 +56,23 @@ function updateNumberOfTasksInStates(){
 
 function changeToInputFields(){
   $('.input-field').show()
-  $('.ticket-detail-field').filter(":not(.immutable)").hide()
-  $('#editTicket').hide()
-  $('#saveTicket').show()
-  $('#cancelEditTicket').show()
+  $('.ticket-detail-field, .board-detail-field').filter(":not(.immutable)").hide()
+  $('#editTicket, #editBoard').hide()
+  $('#saveTicket, #saveBoard').show()
+  $('#cancelEditTicket, #cancelEditBoard').show()
 }
 
 function changeToTextFields(){
   $('.input-field').hide()
-  $('.ticket-detail-field').filter(":not(.immutable)").show()
-  $('#saveTicket').hide()
-  $('#cancelEditTicket').hide()
-  $('#editTicket').show()
+  $('.ticket-detail-field, .board-detail-field').filter(":not(.immutable)").show()
+  $('#saveTicket, #saveBoard').hide()
+  $('#cancelEditTicket, #cancelEditBoard').hide()
+  $('#editTicket, #editBoard').show()
 }
 
 
 function saveEdit(){
-  $('#task-form').submit()
+  $('#edit-form').submit()
 }
 
 function updateOrderOfStates(){

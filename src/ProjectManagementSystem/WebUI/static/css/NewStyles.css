@@ -320,8 +320,8 @@ a.article, a.article:hover {
 }
 
 .ticket-column {
-  margin-bottom: 5em;
-  min-height: 40em;
+  margin-bottom: 4vh;
+  min-height: 50vh;
 }
 
 .ticket-column form {
@@ -392,7 +392,7 @@ a.article, a.article:hover {
   display: inline;
 }
 
-.ticket-detail-field-label{
+.ticket-detail-field-label, #general-settings .form-group label{
   min-width: 10em;
 }
 
@@ -548,7 +548,7 @@ a.article, a.article:hover {
   display: block;
 }
 
-.state form {
+.state form, #editTicketRow form{
   margin-top: 0;
   display: unset;
 }
@@ -592,7 +592,13 @@ a.article, a.article:hover {
   display: inline-block;
   width:auto;
 }
-
+#general-settings {
+  margin-top: 0em;
+}
 #general-settings p {
+  display: inline;
+}
+
+#general-settings form {
   display: inline;
 }

@@ -6,6 +6,17 @@
 <div id="content" class="container">
   <div class="row page-heading">
     <div class="col-xs-12">
+      {% if message %}
+        <div class="alert alert-success">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>Success!</strong>  {{ message }}
+        </div>
+      {% elif error %}
+        <div class="alert alert-danger">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>Something went wrong!</strong>  {{ error }}
+        </div>
+      {% endif %}
       <div class="btn-group board-btn-group" style="float: left">
         <a class="btn btn-default board-btn">
           <h2 class="selection">
@@ -40,20 +51,33 @@
       </ul>
     </div>
   </div>
+
   <div id="general-settings" data-tab="General" class="board-settings settings display-setting">
     <div class="col-xs-12">
-      <div class="form-group">
-        <label for="inputName">Board Name:</label>
-        <p data-id="{{active_board.pk }}" data-value="{{active_board.title}}"style="display: inline;">{{ active_board.title }}
-          <button class="btn btn-default btn-edit-board" onclick="convertToInput(this.parentNode)"><span class="glyphicon glyphicon-pencil"></span></button>
-        </p>
+      <div class="row state-button-row">
+        <button id="editBoard" onclick="changeToInputFields()" class="btn btn-default">Edit <span class='glyphicon glyphicon-pencil'></span></button>
+        <button id='saveBoard' onclick='saveEdit()' class='btn btn-default'>Save <span class='glyphicon glyphicon-ok'></span></button>
+        <button id='cancelEditBoard' onclick='changeToTextFields()' class='btn btn-default'>Cancel <span class='glyphicon glyphicon-remove'></span></button>
+        <form  method="POST" action="{% url 'delete_board' %}">
+          {% csrf_token %}
+            <button {% if active_board.default %} disabled data-toggle="tooltip" data-placement="top" title="The default board cannot be deleted." {% endif %} type="button" onclick="return confirm('Are you sure you want to delete the board?')" class="btn btn-default">Delete Board</button>
+        </form>
       </div>
-      <div class="form-group">
-        <label for="inputName">Board Owner:</label>
-        <p style="display: inline;">{{ active_board.owner }}
-          <button class="btn btn-default btn-edit-board" onclick="convertToInput(this.parentNode)"><span class="glyphicon glyphicon-pencil"></span></button>
-        </p>
-      </div>
+      <form id="edit-form" method="POST" action="{% url 'displayBoardSettings' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="inputName">Board Name:</label>
+          <p class="board-detail-field" data-id="{{active_board.pk }}" data-value="{{active_board.title}}" style="display: inline;">{{ active_board.title }}
+          </p>
+          <input name="board_title" class="form-control input-field" type="text" value="{{ active_board.title }}">
+        </div>
+        <div class="form-group">
+          <label for="inputName">Board Owner:</label>
+          <p class="board-detail-field" style="display: inline;">{{ active_board.owner }}
+          </p>
+          <input name="board_owner" class="form-control input-field" type="text" value="{{ active_board.owner }}">
+        </div>
+      </form>
     </div>
   </div>
 
@@ -146,6 +170,12 @@
   </div>
 </div>
 <script>
+  $(document).ready(function(){
+    $('.input-field').hide()
+    $('#saveBoard').hide()
+    $('#cancelEditBoard').hide()
+  })
+
   var currentLocation = window.location;
   {% if next == "#States" %}
     document.getElementById('states-tab').click()
@@ -157,23 +187,11 @@
       document.getElementById('general-settings-tab').click()
     }
   {% endif %}
-
-    function convertBackToText(parentTag){
-      var a = 'hello'
-    }
-  function convertToInput(parentTag){
-    var value = $(parentTag).data('value')
-    $(parentTag).replaceWith("<p id='input' data-id='" + $(parentTag).data('id') +"'><input type='text' class='form-control' value='" + value +"'><button class='btn btn-default btn-edit-board' onlick='convertBackToText(this.parentNode)'><span class='glyphicon glyphicon-ok'></span></button></p>")
-  }
-
-
-  var x = document.getElementsByClassName("list-group");
   $('[data-toggle="tooltip"]').tooltip();
+  var x = document.getElementsByClassName("list-group");
   dragula(Array.from(x), {})
             .on('drop', function (el, target, source) {
               updateOrderOfStates()
             })
-
-
 </script>
 {% endblock %}

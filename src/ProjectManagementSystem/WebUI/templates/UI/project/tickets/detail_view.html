@@ -20,19 +20,22 @@
       <div class="heading">
         <h2>{{ticket.short_name}} - {{ ticket.name }}</h2>
       </div>
-      <div>
+      <div id="editTicketRow">
         <button id="editTicket" onclick="changeToInputFields()" class="btn btn-default">Edit <span class='glyphicon glyphicon-pencil'></span></button>
         <button id='saveTicket' onclick='saveEdit()' class='btn btn-default'>Save <span class='glyphicon glyphicon-ok'></span></button>
         <button id='cancelEditTicket' onclick='changeToTextFields()' class='btn btn-default'>Cancel <span class='glyphicon glyphicon-remove'></span></button>
-        <button id="editTicket" onclick="" class="btn btn-default">Delete</button>
-        <button id="editTicket" onclick="" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</button>
+        <form action="{% url 'delete_ticket' id=ticket.pk %}" method="POST">
+          {% csrf_token %}
+          <button onclick="return confirm('Are you sure you want to delete the ticket?')"type="submit" class="btn btn-default">Delete</button>
+        </form>
+        <a href="#comment" class="btn btn-default"><span class="glyphicon glyphicon-comment"></span> Comment</a>
       </div>
     </div>
     <div class="row ticket-detail-row">
       <h4> Details </h4>
       <hr></hr>
     </div>
-    <form id="task-form" action="{% url 'ticket_detail' slug=ticket.pk %}" method="POST">
+    <form id="edit-form" action="{% url 'ticket_detail' slug=ticket.pk %}" method="POST">
     <div class="row">
         {% csrf_token %}
         <div class="col-xs-6 edit-ticket-detail">
@@ -101,9 +104,15 @@
 
 
     <div class="row ticket-detail-row">
-      <h4> Comments </h4>
+      <h4>Comments</h4>
       <hr></hr>
     </div>
+      <form>
+      <div class="row">
+        <textarea id="comment" class="form-control" rows="5" placeholder="Add comment" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-default">Post</button>
+    </form>
     <div class="row">
       {% if comments %}
         {% for comment in comments %}
@@ -120,6 +129,6 @@ $(document).ready(function(){
   $('#cancelEditTicket').hide()
 })
 
-  
+
 </script>
 {% endblock %}

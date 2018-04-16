@@ -168,9 +168,9 @@ def new_project(request):
         if form.is_valid():
             project = form.save(commit=False)
             project.owner = request.user
-            project.visibility == 'public' in request.POST
+            project.visibility = 'public' in request.POST
             project.save()
-
+            pdb.set_trace()
             profile = Profile.objects.get(user = request.user)
             profile.projects.add(project)
 
@@ -207,7 +207,7 @@ def dashboard_project_view(request, pk):
     data = {
             'projects' : getProjects(request),
             'tickets' : getTickets(request),
-            'states' : getStates(request),
+            'states' : getBoardStates(request),
             'boards' : getBoards(request),
             'missing_states' : getMissingDefaultStates(request),
             'current_board_name' : Board.objects.get(pk = request.session['active_board']).title,
@@ -232,9 +232,16 @@ def getTickets(request):
     except ValueError:
         return None
 
-def getStates(request):
+def getDefaultStates(request):
     if ACTIVE_PROJECT_ACCESSOR in request.session:
         board_object = Board.objects.get(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True)
+        states = State.objects.filter(board = board_object).order_by('order')
+        return states
+    return None
+
+def getBoardStates(request):
+    if ACTIVE_PROJECT_ACCESSOR in request.session:
+        board_object = Board.objects.get(pk = request.session['active_board'])
         states = State.objects.filter(board = board_object).order_by('order')
         return states
     return None
@@ -278,7 +285,16 @@ def dashboard_ticket_view(request):
 def new_ticket_view(request):
     if request.method == "GET":
         form = NewTicketForm()
-        return render(request, 'UI/project/tickets/new.html', {'form': form})
+        context = { 'form' : form }
+
+        if 'message' in request.session:
+            context['message'] = request.session['message']
+            del request.session['message']
+        elif 'error' in request.session:
+            context['error'] = request.session['error']
+            del request.session['error']
+
+        return render(request, 'UI/project/tickets/new.html', context )
     elif request.method == "POST":
         form = NewTicketForm(request.POST)
         if form.is_valid():
@@ -543,7 +559,7 @@ def ticket_detail(request, slug):
                         'ticket' : ticket,
                         'type_choices' : TYPE_CHOICES,
                         'priority_choices' : PRIORITY_CHOICES,
-                        'states' : getStates(request),
+                        'states' : getDefaultStates(request),
                         }
             if 'error' in request.session:
                 context['error'] = request.session['error']
@@ -587,19 +603,33 @@ def ticket_detail(request, slug):
                 ticket.type = TYPE_CHOICES[i][0]
                 break
 
-        if(request.POST.get('ticket_assigned_to') != 'Unassigned' ):
-            try:
-                profile = Profile.objects.get(user = User.objects.get(username = request.POST.get('ticket_assigned_to')))
-                if not profile.projects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]):
-                    raise Profile.DoesNotExist
-                else:
-                    ticket.assigned_to = profile.user
-                    ticket.save()
-            except (Profile.DoesNotExist, Project.DoesNotExist):
-                request.session['error'] = "There is no user with that username working on this project. Please try with a different username."
+        if(request.POST.get('ticket_assigned_to') != 'Unassigned'):
+            if request.POST.get('ticket_assigned_to') == '':
+                ticket.assigned_to = None
+                ticket.save()
+            else:
+                try:
+                    profile = Profile.objects.get(user = User.objects.get(username = request.POST.get('ticket_assigned_to')))
+                    if not profile.projects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]):
+                        raise Profile.DoesNotExist
+                    else:
+                        ticket.assigned_to = profile.user
+                        ticket.save()
+                except (Profile.DoesNotExist, Project.DoesNotExist):
+                    request.session['error'] = "There is no user with that username working on this project. Please try with a different username."
         else:
             ticket.save()
         return redirect('/project/tickets/detail/' + slug + '/')
+
+def delete_ticket(request, id):
+    if request.method == "POST":
+        try:
+            ticket = Ticket.objects.get(pk = int(id))
+            ticket.delete()
+            request.session['message'] = 'The ticket was successfully deleted'
+        except:
+            pass
+    return redirect('/dashboard/tasks/new')
 
 
 def delete_state(request, slug):
@@ -623,8 +653,9 @@ def new_board(request):
 
 def delete_board(request):
     board = Board.objects.get(pk = request.session['active_board'])
-    board.delete()
-    request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).pk
+    if not board.default == True:
+        board.delete()
+        request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).pk
     return HttpResponseRedirect("/dashboard/")
 
 def update_board_display(request, pk):
@@ -732,17 +763,43 @@ def displayCalendar(request):
 
 def displayBoardSettings(request):
     active_board = Board.objects.get(pk = request.session['active_board'])
-    context = {
-                'boards' : getBoards(request),
-                'active_board' : active_board,
-                'states' : State.objects.filter(board = active_board).order_by('order'),
-                'missing_states' : getMissingDefaultStates(request),
-                'form' : NewStateForm(),
-                'next' : request.session.get('next', '')
-            }
-    if 'next' in request.session:
-        del request.session['next']
-    return render(request, 'UI/project/boards/settings.html', context)
+    if request.method == "GET":
+        context = {
+                    'boards' : getBoards(request),
+                    'active_board' : active_board,
+                    'states' : State.objects.filter(board = active_board).order_by('order'),
+                    'missing_states' : getMissingDefaultStates(request),
+                    'form' : NewStateForm(),
+                    'next' : request.session.get('next', '')
+                }
+        if 'next' in request.session:
+            del request.session['next']
+        if 'message' in request.session:
+            context['message'] = request.session['message']
+            del request.session['message']
+        elif 'error' in request.session:
+            context['error'] = request.session['error']
+            del request.session['error']
+        return render(request, 'UI/project/boards/settings.html', context)
+    elif request.method == "POST":
+        active_board.title = request.POST.get('board_title')
+        username = request.POST.get('board_owner')
+        if username != active_board.owner.username:
+            if username == '':
+                request.session['error'] = 'Oops. A board must have an owner'
+            else:
+                try:
+                    user = User.objects.get(username = username)
+                    active_board.owner = user
+                    active_board.save()
+                    request.session['message'] = 'The board has been updated.'
+                except User.DoesNotExist:
+                    request.session['error'] = 'We couldn\'t find a user with that username working on this project. Try again!'
+        else:
+            active_board.save()
+            request.session['message'] = 'The board was saved'
+        return redirect('/project/boards')
+
 
 def updateStateOrder(request):
     context = {}
