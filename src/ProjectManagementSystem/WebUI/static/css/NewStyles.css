@@ -172,6 +172,9 @@ a.article, a.article:hover {
     color: #fff !important;
 }
 
+.account-menu {
+  width: 9.2em;
+}
 
 .navbar-original {
   height: 7vh !important;
@@ -188,6 +191,21 @@ a.article, a.article:hover {
 }
 #sidebar.active .navbar-header {
   width: 80px;
+}
+
+.user-dropdown a{
+  background: unset;
+  padding-left: 15px !important;
+  margin: 5px 0px;
+}
+
+.user-dropdown {
+  height: 7vh;
+}
+.account-menu{
+  height: 7vh;
+  padding: 15px !important;
+  margin: 0 !important;
 }
 
 /* ---------------------------------------------------
@@ -601,4 +619,31 @@ a.article, a.article:hover {
 
 #general-settings form {
   display: inline;
+}
+
+/* ---------------------------------------------------
+    SEARCH RESULT CSS
+----------------------------------------------------- */
+.push-down {
+  margin-top: 3em;
+}
+
+#search-results h3 {
+  -webkit-margin-before: 0;
+}
+
+#search-results .glyphicon {
+  top: 2px;
+}
+
+#search-results a {
+  color: #0000EE;
+}
+
+#search-results hr {
+  border-top: 1px solid #BBB;
+}
+
+#search-results a:hover {
+  text-decoration: underline;
 }

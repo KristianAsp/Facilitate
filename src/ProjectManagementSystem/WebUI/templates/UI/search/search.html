@@ -1,78 +1,78 @@
 {%  extends 'UI/base.html' %}
 {% block content %}
-<div class= "row">
-  <div class="col-xs-12">
-    <div class="wrapper">
-      <div class ="col-xs-2">
-        {% include 'UI/sidebar.html' %}
-      </div>
-      <div class = "col-xs-10 content search">
-        <div class="col-xs-3">
-          <div class="panel panel-default search-categories">
-            <div class="panel-heading">
-              <h3 class="panel-title">Category</h3>
-            </div>
-            <ul class="list-group">
-              <a class="list-group-item {% if request.GET.type == 'user' %}selected_category{% endif %}" href="?query={{request.GET.query }}&type=user&page=1">
-                <p style="color: black; display: inline" > Users </p>
-                <p style="float: right; display: inline" >{{ userscount }}</p>
-              </a>
-              <a class="list-group-item {% if request.GET.type == 'user' %}selected_category{% endif %}" href="?query={{request.GET.query }}&type=project&page=1">
-                <p style="color: black; display: inline" > Projects </p>
-                <p style="float: right; display: inline" >{{ projectscount }}</p>
-              </a>
-            </ul>
-          </div>
+{% include 'UI/sidebar.html' %}
+
+<div id="content">
+  <div class = "col-xs-12 push-down">
+    <div class="col-xs-3">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Category</h3>
         </div>
-        <div class="col-xs-9">
-          <div id = "search-results">
-            <div class="row">
-              <div class="col-xs-12">
-              {% if request.GET.type == 'user' %}
-                <h3>{{ userscount }} {{ request.GET.type }} results</h3>
-                <hr/>
-              </div>
-            </div>
-            {% for user in result %}
-              <div class="row">
-                <div class="col-xs-1">
-                  <img src="https://timedotcom.files.wordpress.com/2015/04/hubble4.jpg" width="50px" height="50px"></img>
-                </div>
-                <div class="col-xs-11">
-                  <h4 style="line-height: 25px; display:inline"><a href="#">{{ user.username }}</a></h4> - {{user.get_full_name}}
-                  <br>
-                  <span class="glyphicon glyphicon-envelope"> </span> {{ user.email}}
-                </div>
-                <div class="col-xs-12">
-                  <hr></hr>
-                </div>
-              </div>
-            {% endfor %}
-            {% else %}
-              <h3>{{ projectscount }} {{ request.GET.type }} results</h3>
+        <ul class="list-group">
+          <a class="list-group-item {% if request.GET.type == 'user' %}selected_category{% endif %}" href="?query={{request.GET.query }}&type=user&page=1">
+            <p style="color: black; display: inline" > Users </p>
+            <p style="float: right; display: inline" >{{ userscount }}</p>
+          </a>
+          <a class="list-group-item {% if request.GET.type == 'user' %}selected_category{% endif %}" href="?query={{request.GET.query }}&type=project&page=1">
+            <p style="color: black; display: inline" > Projects </p>
+            <p style="float: right; display: inline" >{{ projectscount }}</p>
+          </a>
+        </ul>
+      </div>
+    </div>
+    <div class="col-xs-9">
+      <div id = "search-results">
+        <div class="row">
+          <div class="col-xs-12">
+            {% if request.GET.type == 'user' %}
+              <h3>{{ userscount }} {{ request.GET.type }} results</h3>
               <hr/>
             </div>
-              {% for project in result %}
-                <div class="row">
-                  <h4><a href="#">{{ project.name }}</a></h4>
-                  <hr></hr>
-                </div>
-              {% endfor %}
-            {% endif %}
-            <div class="pagination">
-              <span class="step-links">
-                {% if result.has_previous %}
-                  <a href="?query={{request.GET.query }}&page=1">&laquo; first</a>
-                  <a href="?query={{request.GET.query }}&page={{ result.previous_page_number }}">previous</a>
-                {% endif %}
-                <span class="current">Page {{ result.number }} of {{ result.paginator.num_pages }}.</span>
-                {% if result.has_next %}
-                  <a href="?query={{request.GET.query }}&page={{ result.next_page_number }}">next</a>
-                  <a href="?query={{request.GET.query }}&page={{ result.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-              </span>
-            </div>
           </div>
+          {% for user in result %}
+            <div class="row">
+              <div class="col-xs-1">
+                <img src="https://timedotcom.files.wordpress.com/2015/04/hubble4.jpg" width="50px" height="50px"></img>
+              </div>
+              <div class="col-xs-11">
+                <h4 style="line-height: 25px; display:inline"><a href="/{{user.username}}">{{ user.username }}</a></h4> <h5 style="line-height: 25px; display:inline"> - {{user.get_full_name}}</h5>
+                <br>
+                <span style="line-height: 25px; " class="fas fa-map-marker-alt"> </span> <h5 style="margin-right: 1.5em; line-height: 25px; display:inline">London, UK</h5>
+                <span style="line-height: 25px;" class="glyphicon glyphicon-envelope"> </span> <h5 style="line-height: 25px; display:inline">{{ user.email}}</h5>
+              </div>
+              <div class="col-xs-12">
+                <hr></hr>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+              <h3>{{ projectscount }} {{ request.GET.type }} results</h3>
+            <hr/>
+          </div>
+          {% for project in result %}
+            <div class="row">
+              <div class="col-xs-12">
+                <h4 style="line-height: 25px; display:inline"><a href="{% url 'project_detail_view' slug=project.name %}">{{ project.name }}</a></h4><br>
+                <p style="display: inline">{{project.description}}</p>
+                <hr></hr>
+              </div>
+
+            </div>
+          {% endfor %}
+        {% endif %}
+        <div class="pagination">
+          <span class="step-links">
+            {% if result.has_previous %}
+              <a href="?query={{request.GET.query }}&page=1">&laquo; first</a>
+              <a href="?query={{request.GET.query }}&page={{ result.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="current">Page {{ result.number }} of {{ result.paginator.num_pages }}.</span>
+            {% if result.has_next %}
+              <a href="?query={{request.GET.query }}&page={{ result.next_page_number }}">next</a>
+              <a href="?query={{request.GET.query }}&page={{ result.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+          </span>
         </div>
       </div>
     </div>

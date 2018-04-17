@@ -13,10 +13,12 @@
             <div class="">
               {% if error %}
               <div class="col-xs-11 alert alert-danger">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 <strong>Danger!</strong> {{ error }}
               </div>
               {% elif message %}
               <div class="col-xs-11 alert alert-success">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 <strong>Success!</strong> {{ message }}.
               </div>
               {% endif %}
@@ -62,22 +64,23 @@
           <form class="form-horizontal" method="POST" action="{% url 'updateUserPassword' %}">
           {% csrf_token %}
             <div class="row">
+              {% if current_password_error or matching_password_error %}
+              <div class="col-xs-11 alert alert-danger">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Oops!</strong> {{ current_password_error }} {{ matching_password_error }}
+              </div>
+              {% endif %}
               <div class="">
                 <h3>Password Settings</h3>
-                <p class = "subheading">Update your password</p>
-                {% if current_password_error %}
-                  <p> {{ current_password_error }} </p>
-                {% elif matching_password_error %}
-                  <p> {{ matching_password_error }} </p>
-                {% endif %}
+                <p class="subheading">Update your password</p>
                 {% for field in form.visible_fields %}
-                  {% if "password"  in field.html_name %}
+                  {% if "password" in field.html_name %}
                 <div class="form-group">
                   <div class="col-sm-4">
                     <label class="control-label inputLabel" for="first-name">{{ field.label }}</label>
                   </div>
                   <div class="col-sm-7">
-                    {% render_field field value='********' %}
+                    {% render_field field %}
                   </div>
                 </div>
                   {% endif %}
@@ -107,4 +110,19 @@
         </div>
       </div>
     </div>
+
+    <script>
+      {% if current_password_error %}
+        var field = $('.current_password')
+        field.each(function(){
+          var parent = this.parentNode.parentNode
+          $(parent).addClass('has-error')
+        })
+      {% elif matching_password_error %}
+        var field = $('.new_password')
+        field.each(function(){
+          $(this.parentNode.parentNode).addClass('has-error')
+        })
+      {% endif %}
+    </script>
 {% endblock %}

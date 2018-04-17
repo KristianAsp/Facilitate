@@ -102,15 +102,15 @@ class ProfileForm(forms.Form):
     email.widget.attrs.update({'class' : 'form-control'})
 
     current_password = forms.CharField(widget = forms.PasswordInput())
-    current_password.widget.attrs.update({'class' : 'form-control'})
+    current_password.widget.attrs.update({'class' : 'form-control current_password'})
     current_password.widget.attrs.update({'placeholder' : '********'})
 
     password = forms.CharField(widget = forms.PasswordInput())
-    password.widget.attrs.update({'class' : 'form-control'})
+    password.widget.attrs.update({'class' : 'form-control new_password'})
     password.widget.attrs.update({'placeholder' : '********'})
 
     confirm_password = forms.CharField(widget = forms.PasswordInput())
-    confirm_password.widget.attrs.update({'class' : 'form-control'})
+    confirm_password.widget.attrs.update({'class' : 'form-control new_password'})
     confirm_password.widget.attrs.update({'placeholder' : '********'})
 
     def clean_confirm_password(self):

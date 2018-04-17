@@ -346,31 +346,21 @@ def user_project_settings(request):
     if request.method == "POST":
         error_message = None
         try:
-            rootURL = API_URL + 'profiles/' + request.POST['txtUser'] + '/'
-            data = { 'Authorization' : 'Token ' + request.session['auth']}
-            response = requests.get(rootURL, headers = data)
-            if response.status_code == 500:
-                raise User.DoesNotExist #Raise exception for User that do not exist
-            elif response.status_code == 401:
-                raise PermissionDenied
-            responseJsonParsed = json.loads(response.text)
-            projects = responseJsonParsed['projects']
-
-            if request.session[ACTIVE_PROJECT_ACCESSOR] not in projects:
-                projects.append(int(request.session[ACTIVE_PROJECT_ACCESSOR]))
-                responseJsonParsed['projects'] = projects
-                response = requests.put(rootURL, headers = data, data = responseJsonParsed)
+            user = User.objects.get(Q(username = request.POST.get('txtUser')) | Q(email = request.POST.get('txtUser')) )
+            project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
+            if project not in user.profile.projects.all():
+                user.profile.projects.add(project)
+                user.profile.save()
                 request.session['message'] =  request.POST['txtUser'] + ' was successfully added to the project.'
             else:
                 error_message = "This user is already a collaborator on this project!"
                 request.session['error_message'] = error_message
         except (User.DoesNotExist, Profile.DoesNotExist):
-            print ("Need to send an email now")
             error_message = "No user with that name."
             request.session['error_message'] = error_message
             EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+" # Move this to a file to contain all REGEXs
             if re.match(EMAIL_REGEX, request.POST['txtUser']): ##If the non-existant user is an email address, send an invitation by email to use the software.
-
+                print ("Need to send an email now")
                 createInvitation(request.user, request.POST['txtUser'], request.session[ACTIVE_PROJECT_ACCESSOR])
                 message = "An invitation has been sent to this email address."
                 request.session['message'] = message
@@ -705,9 +695,9 @@ def updateUserPassword(request):
         try:
             user = request.user
             if not user.check_password(request.POST.get('current_password')):
-                request.session['current_password_error'] = 'Incorrect password'
+                request.session['current_password_error'] = 'Your current password is incorrect'
             elif request.POST.get('password') != request.POST.get('confirm_password'):
-                request.session['matching_password_error'] = "Passwords do not match"
+                request.session['matching_password_error'] = "The passwords do not match"
             else:
                 user.set_password(request.POST.get('password'))
                 user.save()
@@ -846,3 +836,15 @@ def copyStateToSubBoard(request, pk):
 
     elif request.method == "GET":
         return redirect('/project/boards')
+
+def project_detail_view(request, slug):
+    if request.method == "GET":
+        project = Project.objects.get(name = slug)
+        if project.visibility == True:
+            profiles = Profile.objects.filter(projects = project)
+            pdb.set_trace()
+            context = {
+                        'project' : project,
+                        'collaborators' : User.objects.filter()
+                        }
+            return render(request, 'UI/project/detail_view.html', context)

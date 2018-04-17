@@ -44,5 +44,5 @@ urlpatterns = [
     url(r'^project/boards/states/update$', views.updateStateOrder, name='updateStateOrder'),
     url(r'^project/boards/states/new$', views.newState, name='newState'),
     url(r'^project/boards/states/copy/(?P<pk>[0-9]+)$', views.copyStateToSubBoard, name='copyStateToSubBoard'),
-
+    url(r'^project/(?P<slug>[ \w_-]+)$', views.project_detail_view,  name = 'project_detail_view'),
 ]
