@@ -1,0 +1,145 @@
+{%  extends 'UI/base.html' %}
+
+
+{% block content %}
+{% include 'UI/sidebar.html' %}
+<div id="content" class ="content ticketcolumns">
+  <div class="container">
+    {% if request.session.active_project %}
+      <div class="heading">
+        <div class="btn-group board-btn-group">
+          <a class="btn btn-default board-btn">
+            <h2 class="selection">
+              {% if boards %}
+                {% for board in boards %}
+                  {% if request.session.active_board|add:0 == board.id %}
+                    {{ board.title }}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            </h2>
+          </a>
+          <button type="button" data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span class="caret"></span></button>
+          <ul class="dropdown-menu" role="menu">
+            {% if boards %}
+              {% for board in boards %}
+                <li  {% if request.session.active_board|add:0 == board.id %} class="active" {% endif %}><a href="{% url 'update_board_display' pk=board.id %}?next={{ request.path|urlencode }}">{{ board.title }}</a></li>
+              {% endfor %}
+            {% endif %}
+          </ul>
+        </div>
+        <div class="dropdown" style="float: right;">
+          <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Board<span class="caret"></span></button>
+          <ul class="dropdown-menu dropdown-menu-left">
+            <li>
+              <a class="" type="button" href="{% url 'displayBoardSettings' %}">Configure Board</a>
+            </li>
+            <li class="divider">
+            </li>
+            <li>
+              <a href = "{% url 'new_board' %}" class="" type="submit">New Board</a>
+            </li>
+            <li>
+              <a href = "{% url 'new_ticket_view' %}" class="" type="submit">New task</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class ="state-row">
+      {% if states %}
+        {% for state in states %}
+        <div class="individual-state-column">
+          <div class="ticket-headers {% if state.short_name == 'BL'  or state.short_name == 'C'  %}ticket-headers-block {% else %} ticket-headers-slim {% endif %}">
+            {% if state.short_name == "BL" or state.short_name == "C" %}
+              <h5 style="line-height: 5.2em;">{{ state.name }}</h5>
+              <h5 class="count"></h5>
+            {% endif  %}
+          </div>
+          {% if state.short_name != "BL" and state.short_name != "C" %}
+            <div {% if state.short_name == "BL" or state.short_name == "C" %} class="ticket-headers-bottom" style="margin-left: 0.2em; margin-right: 0.2em; height: 2.5em; background-color: #ADD8E6" {% else  %} class="ticket-headers-bottom in-progress-header" {% endif %}>
+              <h5>{{ state.name }} </h5>
+              <h5 class="count"></h5>
+            </div>
+          {% endif %}
+          <div class="col-xs-12 ticket-column" id="{{ state.short_name }}">
+            {% if tickets %}
+              {% for ticket in tickets %}
+                {%  if ticket.state == state.short_name %}
+                  <div class="unique-ticket {{ticket.get_priority_display }}" style="background-color: #fff;" id = {{ ticket.id }}>
+                    <div class="row ticket-header">
+                      <div style="float: left; line-height: 4vh;">ID: {{ ticket.short_name }}</div>
+                      <div style="float: right; line-height: 4vh;"><span id="assigned_to_ticket">{{ ticket.assigned_to.first_name }}</span></div>
+                    </div>
+                    <div class="row ticket-body">
+                      <div style="line-height: 4vh; float: left">
+                        <a href="{% url 'ticket_detail' slug=ticket.pk %}">{{ ticket.name }}</a>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button style="width: 1em;" type="button" class="close dismiss-modal" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Update</h4>
+        </div>
+        <div class="modal-body col-xs-10 col-xs-offset-1">
+          <form action="#" method="POST">
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label for="assigned_to">Assigned To:</label>
+                <input id="assigned_to" type="text" name="assigned_to" class="form-control assigned_to" placeholder="">
+                <p class="input_description">Start typing to get a list of possible matches</p>
+              </div>
+            </div>
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label for="priority-selection">Priority:</label>
+                <select class="form-control" id="priority-selection">
+                  <option>Critical</option>
+                  <option>High</option>
+                  <option>Medium</option>
+                  <option>Low</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-xs-12">
+              <div class="form-group">
+                <label for="inputName">Add Comment:</label>
+                <textarea type="text" name="first_name" class="form-control" id="id_first_name"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <div class="col-xs-10 col-xs-offset-1">
+            <button type="button" id ="cancelUpdate" class="btn btn-default dismiss-modal" data-dismiss="modal">Cancel</button>
+            <button id ="update" type="button" class="btn btn-primary">Update</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  var lastUpdatedTime = new Date()
+  var shouldUpdateConcurrently = true
+  var f = concurrencyUpdateBoard
+  //setInterval(f, 2000);
+  updateNumberOfTasksInStates()
+  $(".dropdown-menu li a").click(function(){
+    $(this).parents(".btn-group").find('.selection').text($(this).text());
+    $(this).parents(".btn-group").find('.selection').val($(this).text());
+  });
+</script>
+{% endblock %}
