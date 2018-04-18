@@ -211,6 +211,7 @@ def dashboard_project_view(request, pk):
             'boards' : getBoards(request),
             'missing_states' : getMissingDefaultStates(request),
             'current_board_name' : Board.objects.get(pk = request.session['active_board']).title,
+            'path' : 'dashboard',
             }
     template = loader.get_template('UI/user/dashboard.html')
     return HttpResponse(template.render(data, request))
@@ -278,6 +279,7 @@ def dashboard_ticket_view(request):
         'state_choices' : STATE_CHOICES,
         'table' : table,
         'users' : getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR]),
+        'path' : 'tasks',
         }
     return render(request, 'UI/project/tasklist.html', data)
 
@@ -329,7 +331,7 @@ def getUsersForProject(request, project_id):
 def project_settings_view(request):
     if request.method == "GET":
         data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
-        context = {}
+        context = { 'path' : 'settings' }
         context['data'] = data
         if 'error_message' in request.session:
             context['error_message'] = request.session['error_message']
@@ -718,7 +720,7 @@ def uploadFiles(request):
 
     if request.method == "GET":
         form = DocumentUploadForm()
-        return render(request, 'UI/project/files/upload.html', { 'form' : form, 'files' : files })
+        return render(request, 'UI/project/files/upload.html', { 'form' : form, 'files' : files, 'path' : 'files' })
 
     elif request.method == "POST":
         request.POST = request.POST.copy()
@@ -734,7 +736,7 @@ def displayCalendar(request):
     events = Event.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]))
     if request.method == "GET":
         form = NewEventForm()
-        return render(request, 'UI/project/calendar/calendar.html', { 'form' : form, 'events' : events })
+        return render(request, 'UI/project/calendar/calendar.html', { 'form' : form, 'events' : events, 'path' : 'calendar', })
 
     elif request.method == "POST":
         request.POST = request.POST.copy()
@@ -760,7 +762,8 @@ def displayBoardSettings(request):
                     'states' : State.objects.filter(board = active_board).order_by('order'),
                     'missing_states' : getMissingDefaultStates(request),
                     'form' : NewStateForm(),
-                    'next' : request.session.get('next', '')
+                    'next' : request.session.get('next', ''),
+                    'path' : 'boards',
                 }
         if 'next' in request.session:
             del request.session['next']

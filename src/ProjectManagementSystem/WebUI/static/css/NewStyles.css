@@ -60,7 +60,7 @@ i, span {
     min-height: 93vh;
     min-width: 250px;
     max-width: 250px;
-    background: #f5f5f5;
+    background: #e3e3e3;
     color: #000;
     transition: all 0.3s;
 }
@@ -111,7 +111,7 @@ i, span {
 
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #f5f5f5;
+    background: #e3e3e3;
 }
 
 #sidebar .sidebar-header strong {
@@ -121,7 +121,6 @@ i, span {
 
 #sidebar ul.components {
     padding: 20px 0;
-    border-bottom: 1px solid #47748b;
 }
 
 #sidebar ul li a, #sidebar ul li button {
@@ -138,10 +137,9 @@ i, span {
 }
 
 #sidebar ul li.active > a, a[aria-expanded="true"], #sidebar ul li.active > button,  button[aria-expanded="true"]{
-    color: #6d7fcc;
-    background: #f5f5f5;
+    color: #4285f4;
+    background: #e3e3e3;
 }
-
 
 a[data-toggle="collapse"], button[data-toggle="collapse"] {
     position: relative;
@@ -163,8 +161,8 @@ a[aria-expanded="true"]::before {
 
 ul ul a, ul ul button{
     font-size: 0.9em !important;
-    padding-left: 30px !important;
-    background: #6d7fcc;
+    padding-left: 40px !important;
+    background: #eee;
 }
 
 a.article, a.article:hover {
@@ -359,6 +357,11 @@ a.article, a.article:hover {
   font-size: 25px;
   background-color: unset;
   border-color: transparent;
+  padding: 0;
+}
+
+.board-btn-group button {
+  margin-top: 17px;
 }
 
 .board-btn:hover {
@@ -396,8 +399,12 @@ a.article, a.article:hover {
   background-color: #8CD1E6;
 }
 
+.Low .ticket-header {
+  background-color: darkgreen;
+}
+
 .ticket-body {
-  height: 7vh;
+  min-height: 7vh;
   margin: 0px;
 }
 
@@ -604,6 +611,11 @@ a.article, a.article:hover {
 .btn-edit-board {
   font-size: 12px;
   padding: 3px 6px;
+}
+
+.heading button {
+  margin-top: 20px;
+  margin-right: 5em;
 }
 
 #general-settings .form-control{
