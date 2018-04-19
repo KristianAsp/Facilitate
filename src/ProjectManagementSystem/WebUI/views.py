@@ -201,14 +201,15 @@ def new_project(request):
 def delete_project(request):
     if request.method == "POST":
         data = { 'Authorization' : 'Token ' + request.session['auth']}
-        project = request.session[ACTIVE_PROJECT_ACCESSOR]
-        del request.session[ACTIVE_PROJECT_ACCESSOR]
-        del request.session['active_board']
-        rootURL = API_URL + str(project)
-        response = requests.delete(rootURL, headers = data)
-        responseJsonParsed = json.dumps(response.text)
-        form = ProjectForm()
-        request.session['message'] = 'The project was successfully deleted'
+        try:
+            projectID = request.session[ACTIVE_PROJECT_ACCESSOR]
+            project = Project.objects.get(pk = projectID)
+            project.delete()
+            request.session['message'] = 'The project was successfully deleted'
+            del request.session[ACTIVE_PROJECT_ACCESSOR]
+            del request.session['active_board']
+        except:
+            request.session['error'] = 'Something went wrong. Please try again.'
         return redirect('/project/new/')
 
 @login_required
