@@ -3,80 +3,76 @@
 {% include 'UI/sidebar.html' %}
 <div id="content">
   <div class = "col-xs-12 content">
-    <form class="form-horizontal" method="POST" action="">
-      {% csrf_token %}
-      <div class="row">
-        <div class="col-md-12">
-          <h2 class="details-header">Project Details</h2>
-          {% if error_message %}
-            <div class="alert alert-danger">
-              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-              <strong>Oops!</strong> {{ error_message }}
-            </div>
-          {% elif message %}
-            <div class="alert alert-success">
-              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-              <strong>{{ message }}</strong>
-            </div>
-          {% endif  %}
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="details-header">Project Settings</h2>
+      {% if error_message %}
+        <div class="alert alert-danger">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>Oops!</strong> {{ error_message }}
+        </div>
+      {% elif message %}
+        <div class="alert alert-success">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          <strong>{{ message }}</strong>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  <hr/>
+    <form action="{% url 'update_project' %}"  method="POST">
+      <div class="col-xs-9" id="project_name_form">
+        <h4 style="border-bottom: 1px solid black">Project Name</h4>
+        {% csrf_token %}
+        <div class="form-group">
+          <input name="name" data-name="{{project.name}}"id="project_name_input" oninput="nameChangeListener()" type="text" class="form-control" value="{{ project.name }}">
+          <button id="submit_data-button" type="submit" disabled class="btn btn-default" style="display: inline">Rename</button>
         </div>
       </div>
-      <hr/>
-      <div class="row">
-        <div class="col-md-12">
-          <div class="panel panel-default">
-              <div class="panel-heading">
-                  <h3 class="panel-title">Collaborators</h3>
-              </div>
-              <ul class="list-group">
-                {% if data %}
-                  {% for user in data %}
-                  <div class="list-group-item">
-                    <a href="{% url 'view_user_profile' slug=user.username %}">{{ user.username }}</a>
-
-                    <a style="float: right;" href="{% url 'remove_user_from_project' slug=user.username %}">X</a>
-                  </div>
-                  {% endfor %}
-
-                {% endif  %}
-              </ul>
-              <div class="panel-heading">
-                <form action="{% url 'user_project_settings' %}" method="post">
-                  <label style="display: block">Search for users by username, full name or email address </label>
-                  <input class="form-control" id="txtUser" name="txtUser" placeholder="Search" style="width:70%; display: inline;"/>
-                  <button type="submit" class="btn btn-default" style="display: inline">Add collaborator</button>
-                </form>
-              </div>
-              <script>
-              // Get the <datalist> and <input> elements.
-              var dataList = document.getElementById('datalist');
-              var input = document.getElementById('txtUser');
-              function createAutocompleteList(){
-                $.ajax({
-                  type: 'GET',
-                  url: '/api/users/',
-                  data: {
-                    'name' : $('#txtUser').val,
-                  },
-                  success: addSource,
-                  dataType: 'json',
-                })
-                return false;
-              }
-              function addSource(){
-              }
-              </script>
-          </div>
-        </div>
-      </div>
-      <hr/>
     </form>
-    <div class="col-xs-12">
+    <form action="{% url 'update_project' %}" method="POST">
+      {% csrf_token %}
+      <div class="col-xs-9" id="project_name_form">
+        <h4 style="border-bottom: 1px solid black">Project Visibility</h4>
+          <p style="color: black; font-size: 14px">
+            Select an option below to determine your project's visibility.<br>
+            A private project means that it is hidden from all search results, but it also means that users can not request
+            to become a collaborator.
+          </p>
+          <div class="form-group">
+            <div class="radio">
+              <label><input {% if project.visibility == False %} checked {% endif %} type="radio" value="private" name="visibility">Private</label>
+            </div>
+            <div class="radio">
+              <label><input {% if project.visibility == True %} checked {% endif %} type="radio" value="public" name="visibility">Public</label>
+            </div>
+            <button id="submit_data-button" type="submit" class="btn btn-default" style="display: inline">Save</button>
+          </div>
+
+      </div>
+    </form>
+    <div class="col-xs-9">
+      <h4 style="border-bottom: 1px solid black">Delete your project </h4>
+      <p style="color: black; font-size: 14px">
+        Click on the button below if want to delete your project.<br>
+        This action <strong>cannot</strong> be undone.This will permanently delete the project, along with all tickets, comments and boards.
+      </p>
       <form action= {% url 'delete_project' %} method = "POST">
         {% csrf_token %}
         <button type="submit" class="btn btn-default" onclick="return confirm('Are you sure you want to delete the project?')" style="display: inline">Delete Project</button>
       </form>
     </div>
   </div>
+  <script>
+  function nameChangeListener(){
+    if($('#project_name_input').data('name') != $('#project_name_input').val()) {
+      $('#submit_data-button').attr('disabled', false)
+    }
+    else{
+      $('#submit_data-button').attr('disabled', true)
+    }
+  }
+
+  </script>
 </div>
 {% endblock %}

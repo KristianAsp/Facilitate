@@ -1,6 +1,8 @@
 {%  extends 'UI/base.html' %}
 {% block content %}
-{% include 'UI/sidebar.html' %}
+{% if request.user.is_authenticated %}
+  {% include 'UI/sidebar.html' %}
+{% endif %}
 
 <div id="content">
   <div class = "col-xs-12 push-down">

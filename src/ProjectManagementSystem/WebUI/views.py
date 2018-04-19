@@ -157,11 +157,31 @@ def index(request):
     template = loader.get_template('UI/index.html')
     return HttpResponse(template.render(context, request))
 
+def setDefaultRequestValues(request):
+    projects = Profile.objects.get(user = request.user).projects.all()
+    try:
+        if(len(projects) > 0):
+            request.session[ACTIVE_PROJECT_ACCESSOR] = projects[0].pk
+            request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
+    except:
+        pass
+
 @login_required
 def new_project(request):
     if request.method == "GET":
         form = ProjectForm()
-        return render(request, 'UI/project/new.html', {'form' : form})
+        context = {
+                    'form' : form,
+                    'projects' : getProjects(request),
+                }
+        if ACTIVE_PROJECT_ACCESSOR not in request.session:
+            setDefaultRequestValues(request)
+
+        if 'message' in request.session:
+            context['message'] = request.session['message']
+            del request.session['message']
+
+        return render(request, 'UI/project/new.html', context)
 
     if request.method == "POST":
         form = ProjectForm(request.POST)
@@ -170,14 +190,13 @@ def new_project(request):
             project.owner = request.user
             project.visibility = 'public' in request.POST
             project.save()
-            pdb.set_trace()
             profile = Profile.objects.get(user = request.user)
             profile.projects.add(project)
 
-            if ACTIVE_PROJECT_ACCESSOR not in request.session:
-                request.session[ACTIVE_PROJECT_ACCESSOR] = project.pk
-
-            return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully created' })
+            request.session[ACTIVE_PROJECT_ACCESSOR] = project.pk
+            request.session['active_board'] = Board.objects.get(project = project, default = True).pk
+            request.session['message'] = 'The project was successfully created'
+            return redirect('/project/new/')
 
 def delete_project(request):
     if request.method == "POST":
@@ -185,11 +204,12 @@ def delete_project(request):
         project = request.session[ACTIVE_PROJECT_ACCESSOR]
         del request.session[ACTIVE_PROJECT_ACCESSOR]
         del request.session['active_board']
-        rootURL = 'http://127.0.0.1:8000/api/projects/' + project
+        rootURL = API_URL + str(project)
         response = requests.delete(rootURL, headers = data)
         responseJsonParsed = json.dumps(response.text)
         form = ProjectForm()
-        return render(request, 'UI/project/new.html', {'form' : form, 'message' : 'The project was successfully deleted' })
+        request.session['message'] = 'The project was successfully deleted'
+        return redirect('/project/new/')
 
 @login_required
 def dashboard_project_view(request, pk):
@@ -331,7 +351,11 @@ def getUsersForProject(request, project_id):
 def project_settings_view(request):
     if request.method == "GET":
         data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
-        context = { 'path' : 'settings' }
+        context = {
+                    'path' : 'settings',
+                    'project' : Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]),
+                    'projects' : getProjects(request),
+                }
         context['data'] = data
         if 'error_message' in request.session:
             context['error_message'] = request.session['error_message']
@@ -370,7 +394,7 @@ def user_project_settings(request):
         except PermissionDenied:
             error_message = "You are not allowed to do that."
             request.session['error_message'] = error_message
-        return HttpResponseRedirect('/project/settings')
+        return HttpResponseRedirect('/project/collaborators')
     elif request.method == "GET":
         data_arr = []
         if ACTIVE_PROJECT_ACCESSOR in request.session:
@@ -392,20 +416,27 @@ def createInvitation(user, email, project):
 def view_user_profile(request, slug):
     responseJsonParsed = None
     form = ProfileForm()
-    rootURL = API_URL + 'users/' + slug + '/'
-    data = { 'Authorization' : 'Token ' + request.session['auth']}
-    response = requests.get(rootURL, headers = data)
-    if response.status_code == 500:
-        raise User.DoesNotExist #Raise exception for User that do not exist
-    elif response.status_code == 404:
-        raise Http404
-    else:
-        responseJsonParsed = json.loads(response.text)
-        del responseJsonParsed['password']
+    context = {
+                'form' : form
+            }
+    if request.user.is_authenticated:
+        rootURL = API_URL + 'users/' + slug + '/'
+        data = { 'Authorization' : 'Token ' + request.session['auth']}
+        response = requests.get(rootURL, headers = data)
+        if response.status_code == 500:
+            raise User.DoesNotExist #Raise exception for User that do not exist
+        elif response.status_code == 404:
+            raise Http404
+        else:
+            responseJsonParsed = json.loads(response.text)
+            del responseJsonParsed['password']
 
-    context = { 'form' : form,
-                'user' : responseJsonParsed,
-                }
+        context['user'] = responseJsonParsed
+    else:
+        context['user'] = User.objects.get(username = slug)
+
+    if request.user.is_authenticated:
+        context['projects'] = getProjects(request)
 
     if 'current_password_error' in request.session:
         context['current_password_error'] = request.session['current_password_error']
@@ -448,6 +479,9 @@ def search(request):
                 'projectscount' : len(projects),
                 }
 
+        if request.user.is_authenticated:
+            context['projects'] = getProjects(request)
+
     elif request.GET['type'] == "project":
         users = filterUsers(request, request.GET['query'])
         projects = filterProjects(request, request.GET['query'])
@@ -467,6 +501,9 @@ def search(request):
                 'userscount' : len(users),
                 'projectscount' : len(projects),
                 }
+
+        if request.user.is_authenticated:
+            context['projects'] = getProjects(request)
 
     return render(request, 'UI/search/search.html', context )
 
@@ -720,7 +757,13 @@ def uploadFiles(request):
 
     if request.method == "GET":
         form = DocumentUploadForm()
-        return render(request, 'UI/project/files/upload.html', { 'form' : form, 'files' : files, 'path' : 'files' })
+        context = {
+                    'projects' : Profile.objects.get(user = request.user).projects.all(),
+                    'form' : form,
+                    'files' : files,
+                    'path' : 'files',
+                }
+        return render(request, 'UI/project/files/upload.html', context)
 
     elif request.method == "POST":
         request.POST = request.POST.copy()
@@ -736,7 +779,13 @@ def displayCalendar(request):
     events = Event.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]))
     if request.method == "GET":
         form = NewEventForm()
-        return render(request, 'UI/project/calendar/calendar.html', { 'form' : form, 'events' : events, 'path' : 'calendar', })
+        context = {
+                    'form' : form,
+                    'projects' : Profile.objects.get(user = request.user).projects.all(),
+                    'events' : events,
+                    'path' : 'calendar',
+                }
+        return render(request, 'UI/project/calendar/calendar.html', context)
 
     elif request.method == "POST":
         request.POST = request.POST.copy()
@@ -764,6 +813,7 @@ def displayBoardSettings(request):
                     'form' : NewStateForm(),
                     'next' : request.session.get('next', ''),
                     'path' : 'boards',
+                    'projects' : Profile.objects.get(user = request.user).projects.all(),
                 }
         if 'next' in request.session:
             del request.session['next']
@@ -851,3 +901,39 @@ def project_detail_view(request, slug):
                         'collaborators' : User.objects.filter()
                         }
             return render(request, 'UI/project/detail_view.html', context)
+
+
+def viewCollaborators(request):
+    data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
+    context = {
+                'path' : 'collaborators',
+                'data' : data,
+                'projects' : Profile.objects.get(user = request.user).projects.all(),
+    }
+
+    return render(request, 'UI/project/collaborators.html', context)
+
+
+def update_project(request):
+    if request.method == "POST":
+        project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
+        if 'name' in request.POST:
+            new_name = request.POST.get('name')
+            if new_name != "":
+                project.name = new_name
+                project.save()
+                request.session['message'] = "The project has been renamed to " + new_name
+
+            else:
+                request.session['error'] = "A project cannot have a blank name"
+
+        else:
+            if request.POST.get('visibility') == "public":
+                project.visibility = True
+                project.save()
+            else:
+                project.visibility = False
+                project.save()
+            request.session['message'] = "The project visibility has been saved."
+
+        return redirect('/project/settings')

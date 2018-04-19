@@ -29,12 +29,15 @@
     </ul>
     <ul class ="list-unstyled components">
         <li {% if path == 'dashboard' %} class="active" {% endif %}><a href='/dashboard/'>Dashboard</a></li>
-        <li {% if path == 'tasks' %} class="active" {% endif %}><a href="{% url 'dashboard_ticket_view' %}">Tasks</a></li>
-        <li {% if path == 'boards' %} class="active" {% endif %}><a href="{% url 'displayBoardSettings' %}" >Boards</a></li>
-        <li {% if path == 'files' %} class="active" {% endif %}><a href="{% url 'upload_files' %}">Files</a></li>
-        <li {% if path == 'calendar' %} class="active" {% endif %}><a href="{% url 'displayCalendar' %}">Calendar</a></li>
-        {% if request.session.is_owner == True %}
-          <li {% if path == 'settings' %} class="active" {% endif %}><a href="{% url 'project_settings' %}">Settings</a></li>
+        {% if request.session.active_project %}
+          <li {% if path == 'tasks' %} class="active" {% endif %}><a href="{% url 'dashboard_ticket_view' %}">Tasks</a></li>
+          <li {% if path == 'boards' %} class="active" {% endif %}><a href="{% url 'displayBoardSettings' %}" >Boards</a></li>
+          <li {% if path == 'files' %} class="active" {% endif %}><a href="{% url 'upload_files' %}">Files</a></li>
+          <li {% if path == 'calendar' %} class="active" {% endif %}><a href="{% url 'displayCalendar' %}">Calendar</a></li>
+          <li {% if path == "collaborators" %} class="active" {% endif %}><a href="{% url 'viewCollaborators' %}">Collaborators</a><li>
+          {% if request.session.is_owner == True %}
+            <li {% if path == 'settings' %} class="active" {% endif %}><a href="{% url 'project_settings' %}">Project Settings</a></li>
+          {% endif %}
         {% endif %}
     </ul>
 </nav>

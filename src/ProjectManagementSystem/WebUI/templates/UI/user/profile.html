@@ -1,7 +1,9 @@
 {%  extends 'UI/base.html' %}
 {% block content %}
 {% load widget_tweaks %}
-{% include 'UI/sidebar.html' %}
+{% if request.user.is_authenticated %}
+  {% include 'UI/sidebar.html' %}
+{% endif %}
 
 <div id="content">
       <div class = "col-xs-6 profile" style = "background-color: #fff">
@@ -23,7 +25,7 @@
               </div>
               {% endif %}
               <h3 class="details-header">
-                {% if request.user.id == user.id %}
+                {% if request.user.is_authenticated == True and request.user.id == user.id %}
                   Your personal details
                 {% else %}
                   {{ user.username }}'s Profile
@@ -38,7 +40,7 @@
                 <div class="col-sm-7">
                   {% for key, value in user.items %}
                     {% if field.name == key %}
-                      {% if request.user.id == user.id %}
+                      {% if request.user.is_authenticated and request.user.id == user.id %}
                         {% render_field field value=value %}
                       {% else %}
                          <div style="padding-top: 7px">{{ value }}</div>
@@ -51,7 +53,7 @@
               {% endfor %}
             </div>
           </div>
-          {% if request.user.id == user.id %}
+          {% if request.user.is_authenticated == True and request.user.id == user.id %}
           <div class ="form-group">
             <div class="col-md-12 col-md-pull-1">
               <button style="float: right" type="submit" class="btn btn-default">Update</button>
@@ -60,7 +62,7 @@
           {% endif %}
           <hr/>
         </form>
-        {% if request.user.id == user.id %}
+        {% if request.user.is_authenticated == True and request.user.id == user.id %}
           <form class="form-horizontal" method="POST" action="{% url 'updateUserPassword' %}">
           {% csrf_token %}
             <div class="row">
@@ -99,7 +101,7 @@
       <div class = "col-xs-6 profile" style = "background-color: #fff">
         <div>
           <h3 class="details-header">
-            {% if request.user.id == user.id %}
+            {% if request.user.is_authenticated == True and request.user.id == user.id %}
               Your latest activity
             {% else %}
               {{ user.username }}'s latest activity

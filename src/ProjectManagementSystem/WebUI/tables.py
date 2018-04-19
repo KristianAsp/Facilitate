@@ -4,7 +4,6 @@ from django_tables2.utils import A
 from WebAPI.models import *
 
 class TicketTable(tables.Table):
-    amend = tables.TemplateColumn('<input type="checkbox"/>', verbose_name="")
     name = tables.LinkColumn('ticket_detail',  args=[A('pk')], accessor='name', attrs={'td': {'class': 'ticketTableColumn'}})
     type = tables.Column(verbose_name="Type", attrs={
                                                     'td': {

@@ -142,19 +142,24 @@ class DocumentUploadForm(forms.ModelForm):
 
 class NewEventForm(forms.ModelForm):
     event_title = forms.CharField()
-    event_title.widget.attrs.update({'class' : 'form-control'})
+    event_title.widget.attrs.update({'class' : 'form-control event_title'})
+    event_title.widget.attrs.update({'id' : 'event_title'})
 
     start_date = forms.CharField()
-    start_date.widget.attrs.update({'class' : 'form-control datepicker'})
+    start_date.widget.attrs.update({'class' : 'form-control datepicker start_date'})
+    start_date.widget.attrs.update({'id' : 'start_date'})
 
     end_date = forms.CharField()
-    end_date.widget.attrs.update({'class' : 'form-control datepicker'})
+    end_date.widget.attrs.update({'class' : 'form-control datepicker end_date'})
+    end_date.widget.attrs.update({'id' : 'end_date'})
 
     type = forms.ChoiceField(choices = EVENT_TYPE_CHOICES, widget = forms.Select(), required = True, initial ='' )
-    type.widget.attrs.update({'class' : 'form-control'})
+    type.widget.attrs.update({'class' : 'form-control event_type'})
+    type.widget.attrs.update({'id' : 'event_type'})
 
     description = forms.CharField()
-    description.widget.attrs.update({'class' : 'form-control'})
+    description.widget.attrs.update({'class' : 'form-control event_description'})
+    description.widget.attrs.update({'id' : 'event_description'})
 
     class Meta:
         model = Event

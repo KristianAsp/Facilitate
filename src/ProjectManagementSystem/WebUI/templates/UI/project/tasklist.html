@@ -58,15 +58,9 @@
       </script>
       <hr></hr>
     </div>
-    {% if tickets %}
-      <div class="ticket table-responsive">
-        {% if table %}
-          {% render_table table %}
-        {% else %}
-          <p>No tickets created yet. Maybe it's time to try!</p>
-        {% endif %}
-      </div>
-    {% endif %}
+    <div class="ticket table-responsive">
+        {% render_table table %}
+    </div>
   </div>
 </div>
 

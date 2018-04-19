@@ -659,3 +659,8 @@ a.article, a.article:hover {
 #search-results a:hover {
   text-decoration: underline;
 }
+
+#project_name_form input{
+  width: 20em;
+  display: inline-block;
+}

@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^dashboard/tasks/new$', views.new_ticket_view,  name = 'new_ticket_view'),
     url(r'^project/settings$', views.project_settings_view,  name = 'project_settings'),
     url(r'^project/settings/users$', views.user_project_settings, name = 'user_project_settings'),
+    url(r'^project/collaborators$', views.viewCollaborators, name = 'viewCollaborators'),
     url(r'^project/users/delete/(?P<slug>[\w_-]+)/$', views.remove_user_from_project, name = 'remove_user_from_project'),
     url(r'^project/delete$', views.delete_project, name = 'delete_project'),
     url(r'^project/tickets/detail/(?P<slug>[ \w_-]+)/$', views.ticket_detail, name = 'ticket_detail'),
@@ -44,5 +45,6 @@ urlpatterns = [
     url(r'^project/boards/states/update$', views.updateStateOrder, name='updateStateOrder'),
     url(r'^project/boards/states/new$', views.newState, name='newState'),
     url(r'^project/boards/states/copy/(?P<pk>[0-9]+)$', views.copyStateToSubBoard, name='copyStateToSubBoard'),
+    url(r'^project/update$', views.update_project, name = 'update_project'),
     url(r'^project/(?P<slug>[ \w_-]+)$', views.project_detail_view,  name = 'project_detail_view'),
 ]

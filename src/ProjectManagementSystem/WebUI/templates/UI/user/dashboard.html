@@ -13,7 +13,7 @@
               {% if boards %}
                 {% for board in boards %}
                   {% if request.session.active_board|add:0 == board.id %}
-                    {{ board.title }}
+                    Board: {{ board.title }}
                   {% endif %}
                 {% endfor %}
               {% endif %}
