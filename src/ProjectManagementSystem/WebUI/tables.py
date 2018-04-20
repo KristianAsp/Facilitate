@@ -37,4 +37,4 @@ class TicketTable(tables.Table):
     last_modified = tables.Column(verbose_name = "Last Updated", attrs={'td': {'class': 'ticketTableColumn'}})
 
     class Meta:
-        attrs = {'class' : 'ticketTable table table-hover' }
+        attrs = {'class' : 'ticketTable table table-hover table-striped' }

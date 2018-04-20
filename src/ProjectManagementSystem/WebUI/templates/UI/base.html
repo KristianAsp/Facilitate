@@ -4,7 +4,7 @@
 <html>
   <head>
       <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta id="myViewport" name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Project-LandingPage</title>
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -30,7 +30,7 @@
   </head>
   <body>
     <div class="wrapper">
-      <nav class="navbar navbar-original navbar-default navbar-fixed-top" {% if not request.user.is_authenticated %} style="margin-left: 0px; width: 100vw;"{% endif %}>
+      <nav class="navbar navbar-original navbar-default navbar-fixed-top {% if not request.user.is_authenticated %} logged_out_navbar {% endif %}" >
         <div class="container-fluid">
           <div class="navbar-header">
             {% if not request.user.is_authenticated %}
@@ -82,7 +82,14 @@
                 $('#sidebar').toggleClass('active');
                 $('.navbar-original').toggleClass('active');
             });
+            var width = $( window ).width()
+            if( width < 700) {
+              var mvp = document.getElementById('myViewport');
+              $(mvp).remove()
+            }
         });
+
+
     </script>
   </body>
 </html>

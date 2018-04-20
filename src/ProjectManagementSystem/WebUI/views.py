@@ -51,7 +51,7 @@ def user_login(request):
 
 @login_required
 def dashboard_index(request):
-    data = {'projects' : getProjects(request),}
+    data = {'projects' : getProjects(request), 'path' : 'dashboard' }
     try:
         if request.session[ACTIVE_PROJECT_ACCESSOR]:
             return HttpResponseRedirect("/dashboard/" + request.session[ACTIVE_PROJECT_ACCESSOR])
@@ -105,23 +105,27 @@ def settings_index(request):
 
 def user_register(request):
     form = RegisterForm(request.POST)
-
+    context = {}
     if form.is_valid():
-        user = form.save(commit=False)
-        user.set_password(form.cleaned_data.get('password'))
-        user.save()
-        profile = Profile(user = user)
-        invitations = Invitation.objects.filter(user = user.email)
+        if re.match("^[\w_-]+$", form.cleaned_data.get('username')):
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data.get('password'))
+            user.save()
+            profile = Profile(user = user)
+            invitations = Invitation.objects.filter(user = user.email)
 
-        profile.save()
-        for invitation in invitations:
-            profile.projects.add(invitation.project)
+            profile.save()
+            for invitation in invitations:
+                profile.projects.add(invitation.project)
 
-        profile.save()
-        login(request, user)
-        request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
-        return HttpResponseRedirect('/dashboard/')
-    return render(request, 'UI/register.html', {'form': form})
+            profile.save()
+            login(request, user)
+            request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
+            return HttpResponseRedirect('/dashboard/')
+        else:
+            context['error'] = "Please only use standard characters in your username."
+    context['form'] = form
+    return render(request, 'UI/register.html', context)
 
 def register_index(request):
     if request.method == "POST":
@@ -161,7 +165,7 @@ def setDefaultRequestValues(request):
     projects = Profile.objects.get(user = request.user).projects.all()
     try:
         if(len(projects) > 0):
-            request.session[ACTIVE_PROJECT_ACCESSOR] = projects[0].pk
+            request.session[ACTIVE_PROJECT_ACCESSOR] = str(projects[0].pk)
             request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
     except:
         pass
@@ -181,6 +185,7 @@ def new_project(request):
             context['message'] = request.session['message']
             del request.session['message']
 
+
         return render(request, 'UI/project/new.html', context)
 
     if request.method == "POST":
@@ -193,7 +198,7 @@ def new_project(request):
             profile = Profile.objects.get(user = request.user)
             profile.projects.add(project)
 
-            request.session[ACTIVE_PROJECT_ACCESSOR] = project.pk
+            request.session[ACTIVE_PROJECT_ACCESSOR] = str(project.pk)
             request.session['active_board'] = Board.objects.get(project = project, default = True).pk
             request.session['message'] = 'The project was successfully created'
             return redirect('/project/new/')
@@ -216,7 +221,7 @@ def delete_project(request):
 def dashboard_project_view(request, pk):
     rootURL = API_URL + 'projects/tickets/' + pk
     if 'active_board' not in request.session or pk != request.session[ACTIVE_PROJECT_ACCESSOR]:
-        request.session[ACTIVE_PROJECT_ACCESSOR] = pk
+        request.session[ACTIVE_PROJECT_ACCESSOR] = str(pk)
         request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
     project = getSingleProject(request, pk);
 
@@ -321,7 +326,7 @@ def new_ticket_view(request):
     elif request.method == "POST":
         form = NewTicketForm(request.POST)
         if form.is_valid():
-            context = { 'form' : form ,
+            context = { 'form' : form,
                         'message' : 'The ticket was successfully created',
                         }
             data = { 'Authorization' : 'Token ' + request.session['auth']}
@@ -580,6 +585,7 @@ def send_email(template, recipients, subject, **kwargs):
     email.content_subtype = 'html'
     email.send()
 
+@login_required
 def ticket_detail(request, slug):
     context = {}
     if request.method == "GET":
@@ -662,10 +668,11 @@ def delete_ticket(request, id):
     return redirect('/dashboard/tasks/new')
 
 
-def delete_state(request, slug):
+def delete_state(request, pk):
     if request.method == "POST":
         board = Board.objects.get(pk = request.session['active_board'])
-        state = State.objects.get(board = board, short_name = slug)
+        state = State.objects.get(pk = pk)
+        slug = state.short_name
         state.delete()
         if(board.default == True):
             boards = Board.objects.filter(project = board.project)

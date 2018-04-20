@@ -105,16 +105,6 @@ class Invitation(models.Model):
     invitor = models.ForeignKey(User)
     issued = models.DateTimeField(auto_now_add=True, blank=True, null = True)
 
-class Activity(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    action = models.CharField(
-        max_length = 10,
-        choices = ACTIVITY_CHOICES,
-        default = ACTIVITY_CHOICES[0][0],
-    )
-
-    item = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=True)
-
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()

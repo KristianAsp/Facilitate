@@ -68,7 +68,17 @@
                   <div class="unique-ticket {{ticket.get_priority_display }}" style="background-color: #fff;" id = {{ ticket.id }}>
                     <div class="row ticket-header">
                       <div style="float: left; line-height: 4vh;">ID: {{ ticket.short_name }}</div>
-                      <div style="float: right; line-height: 4vh;"><span id="assigned_to_ticket">{{ ticket.assigned_to.first_name }}</span></div>
+                      <div style="float: right; line-height: 4vh;">
+                        <span id="assigned_to_ticket">{{ ticket.assigned_to.username }}</span>
+                        <div class="dropdown" style="float: right;">
+                          <button class="dropdown-toggle" type="button" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span></button>
+                          <ul class="dropdown-menu dropdown-menu-left">
+                            <li>
+                              <a href = "{% url 'ticket_detail' slug=ticket.pk %}">Edit</a>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                     <div class="row ticket-body">
                       <div style="line-height: 4vh; float: left">

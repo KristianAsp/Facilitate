@@ -6,7 +6,8 @@
 {% endif %}
 
 <div id="content">
-      <div class = "col-xs-6 profile" style = "background-color: #fff">
+  <div style="min-height:93vh;">
+      <div class = "col-xs-6 profile">
         <div id = "label">
         </div>
         <form class="form-horizontal" method="POST" action="{% url 'updateUserDetails' %}">
@@ -98,7 +99,7 @@
           <hr/>
         {% endif %}
       </div>
-      <div class = "col-xs-6 profile" style = "background-color: #fff">
+      <div class = "col-xs-6 profile">
         <div>
           <h3 class="details-header">
             {% if request.user.is_authenticated == True and request.user.id == user.id %}
@@ -107,11 +108,12 @@
               {{ user.username }}'s latest activity
             {% endif %}
           </h3>
-          <div style="overflow-y: scroll; height:72.8vh; width: 90%; background-color: #fff;">
+          <div style="overflow-y: scroll; height:72.8vh; width: 90%;">
           </div>
         </div>
       </div>
     </div>
+  </div>
 
     <script>
       {% if current_password_error %}

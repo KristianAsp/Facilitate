@@ -3,7 +3,7 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: #fafafa;
+    background-color: #EEE;
 }
 
 p {
@@ -30,6 +30,12 @@ a, a:hover, a:focus {
     transition: all 0.3s;
 
 }
+
+.logged_out_navbar {
+   margin-left: 0px !important;
+   width: 100vw !important;
+}
+
 
 .navbar-btn {
     box-shadow: none;
@@ -58,16 +64,17 @@ i, span {
 
 #sidebar {
     min-height: 100vh;
-    min-width: 250px;
-    max-width: 250px;
-    background: #e3e3e3;
-    color: #000;
+    min-width: 17vw;
+    max-width: 17vw;
+    background: #1D4766;
+    color: #aaa;
     transition: all 0.3s;
+    z-index: 100;
 }
 
 #sidebar.active {
-    min-width: 80px;
-    max-width: 80px;
+    min-width: 7vw;
+    max-width: 7vw;
     text-align: center;
 }
 
@@ -81,10 +88,11 @@ i, span {
 
 #sidebar ul li a, #sidebar ul li button {
     text-align: left;
+    color: #AAA;
 }
 
 #sidebar.active ul li a, #sidebar.active ul li button {
-    padding: 20px 10px;
+    padding: 13px 10px;
     text-align: center;
     font-size: 0.85em;
 }
@@ -111,7 +119,7 @@ i, span {
 
 #sidebar .sidebar-header {
     padding: 20px;
-    background: #e3e3e3;
+    background: #1D4766;
 }
 
 #sidebar .sidebar-header strong {
@@ -131,16 +139,16 @@ i, span {
 
 
 #sidebar ul li a:hover, #sidebar ul li button:hover {
-    color: #7386D5;
-    background: #fff;
+    color: #BF0323;
+    background: #ddd;
 }
 #sidebar ul li a i {
     margin-right: 10px;
 }
 
 #sidebar ul li.active > a, a[aria-expanded="true"], #sidebar ul li.active > button,  button[aria-expanded="true"]{
-    color: #4285f4;
-    background: #e3e3e3;
+    color: black;
+    background: #FFF;
 }
 
 a[data-toggle="collapse"], button[data-toggle="collapse"] {
@@ -180,17 +188,19 @@ a.article, a.article:hover {
   height: 7vh !important;
   margin: 0;
   padding: unset;
-  margin-left: 250px;
-  width: calc(100vw - 250px);
+  margin-left: 17vw;
+  width: calc(100vw - 17vw);
+  z-index:2;
 }
 
 .navbar-original.active {
-  width: calc(100vw - 80px);
-  margin-left: 80px !important;
+  width: calc(100vw - 7vw);
+  margin-left: 7vw !important;
 }
 
 #sidebarCollapse {
   margin-right: 1em;
+  margin-left: 1em;
 }
 
 #sidebar.active #sidebarCollapse{
@@ -220,15 +230,14 @@ a.article, a.article:hover {
 ----------------------------------------------------- */
 #content {
     position: relative;
-    top: 7vh;
+    margin-top: 7vh;
     width: 100vw;
     min-height: 93vh;
     transition: all 0.3s;
-    background-color: #EEE;
 }
 
 .profile {
-  height: 93vh;
+  min-height: 93vh;
 }
 
 .alert {
@@ -237,12 +246,32 @@ a.article, a.article:hover {
 /* ---------------------------------------------------
     MEDIAQUERIES
 ----------------------------------------------------- */
+@media (max-width: 1000px) and (min-width: 769px) {
+  .navbar-original {
+    width: calc(100vw - 20vw);
+    margin-left: 20vw !important;
+  }
+
+  .navbar-#original.active{
+    width: 94vw;
+    margin-left: 6vw !important;
+  }
+
+  #sidebar {
+      min-width: 20vw;
+      max-width: 20vw;
+      text-align: center;
+  }
+
+}
+
 @media (max-width: 768px) {
   #sidebar #sidebarCollapse{
     margin-right: unset;
   }
+
   #sidebar .navbar-header {
-    width: 80px;
+    width: 20vw;
   }
 
   #sidebar ul li > a, a[aria-expanded="true"], #sidebar ul li > button,  button[aria-expanded="true"]{
@@ -277,8 +306,8 @@ a.article, a.article:hover {
   }
 
   #sidebar {
-      min-width: 80px;
-      max-width: 80px;
+      min-width: 25vw;
+      max-width: 25vw;
       text-align: center;
   }
 
@@ -290,10 +319,23 @@ a.article, a.article:hover {
       display: block;
   }
 
-  #sidebarCollapse{
+
+  .navbar-original {
+    width: calc(100vw - 25vw);
+    margin-left: 25vw !important;
+  }
+
+  #sidebar.active {
     display: none;
   }
+
+  .navbar-original.active{
+    width: 100vw;
+    margin-left: 0 !important;
+  }
 }
+
+
 
 /* ---------------------------------------------------
     DASHBOARD STATES
@@ -336,6 +378,12 @@ a.article, a.article:hover {
   margin-right: 0.2em;
   height: 5.2em;
   background-color: #ADD8E6;
+}
+
+.ticket-header .dropdown-toggle {
+  border : none;
+  background: transparent;
+  color: rgba(0,0,0,0.6);
 }
 
 .ticket-headers-slim {

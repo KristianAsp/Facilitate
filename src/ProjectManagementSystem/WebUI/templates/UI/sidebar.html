@@ -1,14 +1,13 @@
 <nav id="sidebar">
     <br>
     <div class="sidebar-header">
-        <h3>Project Application</h3>
-        <strong>PA</strong>
+        <h3>FACILITATE</h3>
+        <strong>F</strong>
     </div>
 
     <ul class="list-unstyled components">
         <li class="active">
             <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false">
-                <i class="glyphicon glyphicon-home"></i>
                 Projects
             </a>
             <ul class="collapse list-unstyled" id="homeSubmenu">
@@ -23,15 +22,15 @@
         </li>
     </ul>
     <ul class ="list-unstyled components">
-        <li {% if path == 'dashboard' %} class="active" {% endif %}><a href='/dashboard/'>Dashboard</a></li>
+        <li {% if path == 'dashboard' %} class="active" {% endif %}><a href='/dashboard/'><i class="glyphicon glyphicon-home"></i>Dashboard</a></li>
         {% if request.session.active_project %}
-          <li {% if path == 'tasks' %} class="active" {% endif %}><a href="{% url 'dashboard_ticket_view' %}">Tasks</a></li>
-          <li {% if path == 'boards' %} class="active" {% endif %}><a href="{% url 'displayBoardSettings' %}" >Boards</a></li>
-          <li {% if path == 'files' %} class="active" {% endif %}><a href="{% url 'upload_files' %}">Files</a></li>
-          <li {% if path == 'calendar' %} class="active" {% endif %}><a href="{% url 'displayCalendar' %}">Calendar</a></li>
-          <li {% if path == "collaborators" %} class="active" {% endif %}><a href="{% url 'viewCollaborators' %}">Collaborators</a><li>
+          <li {% if path == 'tasks' %} class="active" {% endif %}><a href="{% url 'dashboard_ticket_view' %}"><i class="glyphicon glyphicon-th-list"></i>Tasks</a></li>
+          <li {% if path == 'boards' %} class="active" {% endif %}><a href="{% url 'displayBoardSettings' %}"><i class="glyphicon glyphicon-list-alt"></i>Boards</a></li>
+          <li {% if path == 'files' %} class="active" {% endif %}><a href="{% url 'upload_files' %}"><i class="glyphicon glyphicon-file"></i>Files</a></li>
+          <li {% if path == 'calendar' %} class="active" {% endif %}><a href="{% url 'displayCalendar' %}"><i class="glyphicon glyphicon-calendar"></i>Calendar</a></li>
+          <li {% if path == "collaborators" %} class="active" {% endif %}><a href="{% url 'viewCollaborators' %}"><i class="glyphicon glyphicon-globe"></i>Collaborators</a><li>
           {% if request.session.is_owner == True %}
-            <li {% if path == 'settings' %} class="active" {% endif %}><a href="{% url 'project_settings' %}">Project Settings</a></li>
+            <li {% if path == 'settings' %} class="active" {% endif %}><a href="{% url 'project_settings' %}"><i class="glyphicon glyphicon-cog"></i>Project Settings</a></li>
           {% endif %}
         {% endif %}
     </ul>
