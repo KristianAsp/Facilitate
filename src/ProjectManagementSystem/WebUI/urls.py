@@ -7,7 +7,7 @@ from django.conf import settings
 
 
 
-handler404 = views.handler404
+handler404 = 'views.handler404'
 
 urlpatterns = [
     url(r'^$', views.index),
@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^project/users/delete/(?P<slug>[\w_-]+)/$', views.remove_user_from_project, name = 'remove_user_from_project'),
     url(r'^project/delete$', views.delete_project, name = 'delete_project'),
     url(r'^project/tickets/detail/(?P<slug>[ \w_-]+)/$', views.ticket_detail, name = 'ticket_detail'),
+    url(r'^project/tickets/detail/(?P<pk>[ \w_-]+)/comments/$', views.add_comment, name = 'add_comment'),
     url(r'^project/tickets/delete/(?P<id>[0-9]+)/$', views.delete_ticket, name = 'delete_ticket'),
     url(r'^project/tickets/changes/$', views.project_ticket_changes, name = 'project_ticket_changes'),
     url(r'^(?P<slug>[\w_-]+)/$', views.view_user_profile, name = 'view_user_profile'),

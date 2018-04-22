@@ -126,7 +126,7 @@
                   <div data-id="{{ state.pk }}"class="list-group-item state">
                     <span style="margin-right: 1em;" class="glyphicon glyphicon-th"></span>
                     {{ state.short_name }} - {{ state.name }}
-                    <form class="delete-state" method="POST" action="{% url 'delete_state' pk=state.pk %}">
+                    <form class="delete-state" method="POST" action="1">
                       <button type="submit" style="float:right"> &times;</button>
                       {% csrf_token %}
                     </form>

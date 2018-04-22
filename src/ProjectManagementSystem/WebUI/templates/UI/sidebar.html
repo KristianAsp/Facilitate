@@ -13,7 +13,7 @@
             <ul class="collapse list-unstyled" id="homeSubmenu">
               {% if projects %}
                 {% for project in projects %}
-                  <li>
+                  <li {% if request.session.active_project|add:0 == project.id %} style="border-right: 3px solid #c91818" {% endif %}>
                     <a href="{% url 'project_index' pk=project.id %}">{{ project.name }}</a>
                   </li>
                 {% endfor %}

@@ -107,18 +107,26 @@
       <h4>Comments</h4>
       <hr></hr>
     </div>
-      <form>
+      <form method="POST" action="{% url 'add_comment' pk=ticket.pk %}">
+        {% csrf_token %}
       <div class="row">
-        <textarea id="comment" class="form-control" rows="5" placeholder="Add comment" required></textarea>
+        <textarea id="comment" name="comment" class="form-control" rows="5" placeholder="Add comment" required></textarea>
       </div>
       <button type="submit" class="btn btn-default">Post</button>
     </form>
-    <div class="row">
-      {% if comments %}
-        {% for comment in comments %}
-          {{ comment.content }}
-        {% endfor %}
-      {% endif %}
+    <div id = "comment-section" class ="row">
+      {% for comment in comments %}
+      <div id = "{{ comment.id }}" name = "article" class="">
+        <div class="panel panel-info">
+          <div class="panel-body">
+            <div class = "col-md-11">
+              <p> {{ comment.content }}</p>
+              <p> by {{ comment.user }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
   </div>
 </div>

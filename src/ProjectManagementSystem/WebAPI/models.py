@@ -111,6 +111,9 @@ class Comment(models.Model):
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ('created_on',)
+
 def project_directory_path(instance, filename):
     return settings.MEDIA_ROOT + 'documents/project_{0}/{1}'.format(instance.project.id, filename)
 

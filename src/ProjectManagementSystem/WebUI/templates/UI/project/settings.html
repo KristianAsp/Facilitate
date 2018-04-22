@@ -55,7 +55,7 @@
       <h4 style="border-bottom: 1px solid black">Delete your project </h4>
       <p style="color: black; font-size: 14px">
         Click on the button below if want to delete your project.<br>
-        This action <strong>cannot</strong> be undone.This will permanently delete the project, along with all tickets, comments and boards.
+        This action <strong>cannot</strong> be undone. This will permanently delete the project, along with all tickets, comments and boards.
       </p>
       <form action= {% url 'delete_project' %} method = "POST">
         {% csrf_token %}

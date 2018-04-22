@@ -166,6 +166,7 @@ def setDefaultRequestValues(request):
     try:
         if(len(projects) > 0):
             request.session[ACTIVE_PROJECT_ACCESSOR] = str(projects[0].pk)
+            request.session['is_owner'] = projects[0].owner == request.user
             request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
     except:
         pass
@@ -201,6 +202,8 @@ def new_project(request):
             request.session[ACTIVE_PROJECT_ACCESSOR] = str(project.pk)
             request.session['active_board'] = Board.objects.get(project = project, default = True).pk
             request.session['message'] = 'The project was successfully created'
+            request.session['is_owner'] = project.owner == request.user
+
             return redirect('/project/new/')
 
 def delete_project(request):
@@ -539,7 +542,7 @@ def remove_user_from_project(request, slug):
     project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])
     profile.projects.remove(project)
     request.session['message'] =  user.username + ' was successfully removed from the project.'
-    return HttpResponseRedirect('/project/settings')
+    return HttpResponseRedirect('/project/collaborators')
 
 def forgotten_password(request):
     if request.method == "GET":
@@ -596,10 +599,14 @@ def ticket_detail(request, slug):
                         'type_choices' : TYPE_CHOICES,
                         'priority_choices' : PRIORITY_CHOICES,
                         'states' : getDefaultStates(request),
+                        'comments' : Comment.objects.filter(ticket = ticket)
                         }
             if 'error' in request.session:
                 context['error'] = request.session['error']
                 del request.session['error']
+            if 'message' in request.session:
+                context['message'] = request.session['message']
+                del request.session['message']
         except Ticket.DoesNotExist:
             raise Http404
         return render(request, 'UI/project/tickets/detail_view.html', context)
@@ -616,13 +623,16 @@ def ticket_detail(request, slug):
                 except User.DoesNotExist:
                     ticket.assigned_to = None
             if 'comment' in put:
-                pass
+                comment = Comment(user = request.user, content = put.get('comment'), ticket = ticket)
+                comment.save()
             if 'state' in put:
                 ticket.state = put.get('state')
             ticket.save()
             data_arr['ticket'] = "SUCCESS"
         except Ticket.DoesNotExist:
             raise Http404
+        except:
+            pass
         return JsonResponse(data_arr)
     elif request.method == "POST":
         ticket = Ticket.objects.get(pk = int(slug))
@@ -903,7 +913,6 @@ def project_detail_view(request, slug):
         project = Project.objects.get(name = slug)
         if project.visibility == True:
             profiles = Profile.objects.filter(projects = project)
-            pdb.set_trace()
             context = {
                         'project' : project,
                         'collaborators' : User.objects.filter()
@@ -919,6 +928,12 @@ def viewCollaborators(request):
                 'projects' : Profile.objects.get(user = request.user).projects.all(),
     }
 
+    if 'message' in request.session:
+        context['message'] = request.session['message']
+        del request.session['message']
+    elif 'error' in request.session:
+        context['error'] = request.session['error']
+        del request.session['error']
     return render(request, 'UI/project/collaborators.html', context)
 
 
@@ -945,3 +960,10 @@ def update_project(request):
             request.session['message'] = "The project visibility has been saved."
 
         return redirect('/project/settings')
+
+def add_comment(request, pk):
+    ticket = Ticket.objects.get(pk = pk)
+    comment = Comment(user = request.user, content = request.POST.get('comment'), ticket = ticket)
+    comment.save()
+
+    return redirect('/project/tickets/detail/' + pk)
