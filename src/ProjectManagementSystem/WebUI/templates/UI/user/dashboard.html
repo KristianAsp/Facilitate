@@ -29,8 +29,9 @@
           </ul>
         </div>
         <div class="row">
-          <div class="dropdown" style="float: left;">
-            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">Board<span class="caret"></span></button>
+          <a href="{% url 'new_ticket_view' %}" style="display: inline; margin-right: unset" class="btn btn-primary" type="button">New Task</a>
+          <div style="display: inline" class="dropdown">
+            <button class="btn btn-default dropdown-toggle board-dropdown" type="button" data-toggle="dropdown">Board<span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-menu-left">
               <li>
                 <a class="" type="button" href="{% url 'displayBoardSettings' %}">Configure Board</a>
@@ -39,9 +40,6 @@
               </li>
               <li>
                 <a href = "{% url 'new_board' %}" class="" type="submit">New Board</a>
-              </li>
-              <li>
-                <a href = "{% url 'new_ticket_view' %}" class="" type="submit">New task</a>
               </li>
             </ul>
           </div>
@@ -104,6 +102,10 @@
         </div>
         {% endfor %}
       {% endif %}
+      </div>
+    {% else %}
+      <div class="col-xs-8 col-xs-offset-2" id="placeholder" style="text-align:center; color: grey; margin-top: 10vh;">
+        <h2><strong>Oh no!</strong> It seems like you don't have a project yet. Why don't you get started by clicking the button in the top right corner?</h2>
       </div>
     {% endif %}
   </div>

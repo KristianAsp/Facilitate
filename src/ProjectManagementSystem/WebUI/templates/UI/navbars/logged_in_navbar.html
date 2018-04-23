@@ -4,7 +4,7 @@
   </p>
 </li>
 <li class="dropdown user-dropdown">
-  <a class="dropdown-toggle account-menu" data-toggle="dropdown" aria-expanded="false" href="#"> <span class="glyphicon glyphicon-user"></span> {{ request.user.username}}</a>
+  <a class="dropdown-toggle account-menu" data-toggle="dropdown" aria-expanded="false" href="#"> <span class="glyphicon glyphicon-user"></span>  {{ request.user.username }}</a>
   <ul class="dropdown-menu">
     <li><a href="/dashboard">Dashboard</a></li>
     <li><a href="{% url 'view_user_profile' slug=request.user.username %}">Profile</a></li>

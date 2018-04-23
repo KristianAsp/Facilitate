@@ -4,58 +4,59 @@
 {% include 'UI/sidebar.html' %}
 <div id="content">
   <div class="container" style="width: -webkit-fill-available">
-    <a href = "{% url 'new_ticket_view' %}"class="btn btn-default" type="submit">New task</a>
     <div class="row filterRow">
-      <hr></hr>
-      <select id="type" class="filter" multiple="multiple">
-        {% for k, v in type_choices %}
-          <option>{{ v }}</option>
-        {% endfor %}
-      </select>
-      <select id="priority" class="filter" multiple="multiple">
-        {% for k, v in priority_choices %}
-          <option>{{ v }}</option>
-        {% endfor %}
-      </select>
-      <select id="state" class="filter" multiple="multiple">
-        {% for k, v in state_choices %}
-          <option>{{ v }}</option>
-        {% endfor %}
-      </select>
-      <select id="assignee" class="filter" multiple="multiple">
-        {% for user in users %}
-          <option>{{ user.username }}</option>
-        {% endfor %}
-        <option>Unassigned</option>
-      </select>
-      <button onclick="applyFiltersOnTasks()"class="btn btn-default">Apply filters </button>
+      <a href = "{% url 'new_ticket_view' %}"class="btn btn-primary" type="submit">New task</a>
+      <div style="float: right;">
+        <select id="type" class="filter" multiple="multiple">
+          {% for k, v in type_choices %}
+            <option>{{ v }}</option>
+          {% endfor %}
+        </select>
+        <select id="priority" class="filter" multiple="multiple">
+          {% for k, v in priority_choices %}
+            <option>{{ v }}</option>
+          {% endfor %}
+        </select>
+        <select id="state" class="filter" multiple="multiple">
+          {% for k, v in state_choices %}
+            <option>{{ v }}</option>
+          {% endfor %}
+        </select>
+        <select id="assignee" class="filter" multiple="multiple">
+          {% for user in users %}
+            <option>{{ user.username }}</option>
+          {% endfor %}
+          <option>Unassigned</option>
+        </select>
+        <button onclick="applyFiltersOnTasks()"class="btn btn-default">Apply filters </button>
 
-      <script>
-        $(document).ready(function() {
-          $('#type, #priority, #state, #assignee').multiselect({
-            buttonText: function(options, select) {
-                if (options.length === 0 || options.length === select[0].childElementCount) {
-                    return select[0].id + ': all';
-                }
-                else if (options.length > 0) {
-                    return select[0].id + ': ' + options.length + ' selected';
-                }
-                 else {
-                     var labels = [];
-                     options.each(function() {
-                         if ($(this).attr('label') !== undefined) {
-                             labels.push($(this).attr('label'));
-                         }
-                         else {
-                             labels.push($(this).html());
-                         }
-                     });
-                     return select[0].id + ': ' + labels.join(', ') + '';
-                 }
-            }
+        <script>
+          $(document).ready(function() {
+            $('#type, #priority, #state, #assignee').multiselect({
+              buttonText: function(options, select) {
+                  if (options.length === 0 || options.length === select[0].childElementCount) {
+                      return select[0].id + ': all';
+                  }
+                  else if (options.length > 0) {
+                      return select[0].id + ': ' + options.length + ' selected';
+                  }
+                   else {
+                       var labels = [];
+                       options.each(function() {
+                           if ($(this).attr('label') !== undefined) {
+                               labels.push($(this).attr('label'));
+                           }
+                           else {
+                               labels.push($(this).html());
+                           }
+                       });
+                       return select[0].id + ': ' + labels.join(', ') + '';
+                   }
+              }
+            });
           });
-        });
-      </script>
+        </script>
+      </div>
       <hr></hr>
     </div>
     <div class="ticket table-responsive">

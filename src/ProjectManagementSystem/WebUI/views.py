@@ -30,10 +30,12 @@ ACTIVE_PROJECT_ACCESSOR = 'active_project'
 def get_auth_token(request, username, password):
     URL = API_URL + 'get_auth_token/'
     data = dict(username = username, password = password)
-
-    r = requests.post(URL, data = data)
-    data_json = r.json()
-    return data_json['token']
+    try:
+        r = requests.post(URL, data = data)
+        data_json = r.json()
+        return data_json['token']
+    except:
+        return ""
 
 def user_login(request):
     form = LoginForm(request.POST)
@@ -69,22 +71,31 @@ def profile_index(request):
     context = { 'form' : form,
                 'user' : request.user,
                 }
+
+
+    ####
+    # Used to move error messages from one view to another when using a redirect
+    ####
     if 'current_password_error' in request.session:
         context['current_password_error'] = request.session['current_password_error']
+        del request.session['current_password_error']
     if 'matching_password_error' in request.session:
         context['matching_password_error'] = request.session['matching_password_error']
+        del request.session['matching_password_error']
 
     return render(request, 'UI/user/profile.html', context)
 
 def getProjects(request):
     rootURL = API_URL + 'projects/'
 
-    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
+    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session.get('auth', "")}
     try:
         ro = requests.get(rootURL, headers = data)
         return ro.json()
     except ValueError:
         return {}
+    except:
+        return ""
 
 def getSingleProject(request, pk):
     rootURL = API_URL + 'projects/' + pk + '/'
@@ -201,6 +212,10 @@ def new_project(request):
 
             request.session[ACTIVE_PROJECT_ACCESSOR] = str(project.pk)
             request.session['active_board'] = Board.objects.get(project = project, default = True).pk
+
+            ####
+            # Used to move error and success messages from one view to another when using a redirect
+            ####
             request.session['message'] = 'The project was successfully created'
             request.session['is_owner'] = project.owner == request.user
 
@@ -208,7 +223,7 @@ def new_project(request):
 
 def delete_project(request):
     if request.method == "POST":
-        data = { 'Authorization' : 'Token ' + request.session['auth']}
+        data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
         try:
             projectID = request.session[ACTIVE_PROJECT_ACCESSOR]
             project = Project.objects.get(pk = projectID)
@@ -332,7 +347,7 @@ def new_ticket_view(request):
             context = { 'form' : form,
                         'message' : 'The ticket was successfully created',
                         }
-            data = { 'Authorization' : 'Token ' + request.session['auth']}
+            data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
             rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets/"
             post_fields = form.cleaned_data
             post_fields['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
@@ -340,18 +355,20 @@ def new_ticket_view(request):
                 post_fields['assigned_to'] = User.objects.get(username = post_fields['assigned_to']).pk
             except User.DoesNotExist:
                 post_fields['assigned_to'] = None
-
-            response = requests.post(rootURL, headers = data, data = post_fields)
-            responseJsonParsed = json.dumps(response.text)
-            if(response.status_code < 200 or response.status_code > 299):
-                del context['message']
-                context['warning'] = 'There was a problem creating your ticket. The error message was: ' + response.text
+            try:
+                response = requests.post(rootURL, headers = data, data = post_fields)
+                responseJsonParsed = json.dumps(response.text)
+                if(response.status_code < 200 or response.status_code > 299):
+                    del context['message']
+                    context['warning'] = 'There was a problem creating your ticket. The error message was: ' + response.text
+            except:
+                context['warning'] = 'Something went wrong'
 
             return render(request, 'UI/project/tickets/new.html', context)
 
 def getUsersForProject(request, project_id):
     rootURL = API_URL + 'projects/' + str(project_id) + '/users/all'
-    data = { 'Authorization' : 'Token ' + request.session['auth']}
+    data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
     response = requests.get(rootURL, headers = data)
     responseJsonParsed = json.loads(response.text)
     return responseJsonParsed
@@ -428,9 +445,10 @@ def view_user_profile(request, slug):
     context = {
                 'form' : form
             }
+
     if request.user.is_authenticated:
         rootURL = API_URL + 'users/' + slug + '/'
-        data = { 'Authorization' : 'Token ' + request.session['auth']}
+        data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
         response = requests.get(rootURL, headers = data)
         if response.status_code == 500:
             raise User.DoesNotExist #Raise exception for User that do not exist
@@ -531,10 +549,6 @@ def filterProjects(request, query):
         q |= Q(name__icontains = word, visibility = True)
     filteredProjects = Project.objects.filter(q)
     return filteredProjects;
-
-def handler404(request):
-    response = render(request, 'UI/login.html', status=404)
-    return response
 
 def remove_user_from_project(request, slug):
     user = User.objects.get(username = slug)
@@ -689,14 +703,14 @@ def delete_state(request, pk):
             states = State.objects.filter(board__in = boards, short_name = slug)
             states.delete()
         request.session['next'] = '#States'
-        return HttpResponseRedirect("/project/boards")
-    return HttpResponseRedirect("/project/boards")
+        return redirect("/project/boards")
+    return redirect("/project/boards")
 
 def new_board(request):
     board = Board(owner = request.user, default = False, project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), title="Copy of Default Board")
     board.save()
     request.session['active_board'] = board.id
-    return HttpResponseRedirect("/dashboard/")
+    return redirect("/dashboard/")
 
 def delete_board(request):
     board = Board.objects.get(pk = request.session['active_board'])
@@ -918,6 +932,7 @@ def project_detail_view(request, slug):
                         'collaborators' : User.objects.filter()
                         }
             return render(request, 'UI/project/detail_view.html', context)
+        return redirect('dashboard')
 
 
 def viewCollaborators(request):

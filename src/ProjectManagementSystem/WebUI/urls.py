@@ -7,7 +7,7 @@ from django.conf import settings
 
 
 
-handler404 = 'views.handler404'
+
 
 urlpatterns = [
     url(r'^$', views.index),
