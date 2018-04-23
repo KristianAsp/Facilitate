@@ -40,12 +40,10 @@ urlpatterns = [
     url(r'^dashboard/board/delete$', views.delete_board, name='delete_board'),
     url(r'^profile/update/$', views.updateUserDetails, name='updateUserDetails'),
     url(r'^profile/update/password$', views.updateUserPassword, name='updateUserPassword'),
-    url(r'^storage/files$', views.uploadFiles, name='upload_files'),
     url(r'^project/calendar$', views.displayCalendar, name='displayCalendar'),
     url(r'^project/boards$', views.displayBoardSettings, name='displayBoardSettings'),
     url(r'^project/boards/states/update$', views.updateStateOrder, name='updateStateOrder'),
     url(r'^project/boards/states/new$', views.newState, name='newState'),
     url(r'^project/boards/states/copy/(?P<pk>[0-9]+)$', views.copyStateToSubBoard, name='copyStateToSubBoard'),
     url(r'^project/update$', views.update_project, name = 'update_project'),
-    url(r'^project/(?P<slug>[ \w_-]+)$', views.project_detail_view,  name = 'project_detail_view'),
 ]

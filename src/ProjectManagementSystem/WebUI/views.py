@@ -24,9 +24,8 @@ API_URL = 'http://127.0.0.1:8000/api/'
 ACTIVE_PROJECT_ACCESSOR = 'active_project'
 
 ######
-# Obtain authentication token from API
+# Obtain authentication token from API. Stored in the request.session and used to access the API in future requests.
 ######
-
 def get_auth_token(request, username, password):
     URL = API_URL + 'get_auth_token/'
     data = dict(username = username, password = password)
@@ -51,6 +50,9 @@ def user_login(request):
             return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/login.html', {'form': form})
 
+######
+# Load the Dashboard. If the user is a member of a project, redirect to /project/ProjectID instead.
+######
 @login_required
 def dashboard_index(request):
     data = {'projects' : getProjects(request), 'path' : 'dashboard' }
@@ -65,13 +67,13 @@ def dashboard_index(request):
             template = loader.get_template('UI/user/dashboard.html')
             return HttpResponse(template.render(data, request))
 
+
 @login_required
 def profile_index(request):
     form = ProfileForm()
     context = { 'form' : form,
                 'user' : request.user,
                 }
-
 
     ####
     # Used to move error messages from one view to another when using a redirect
@@ -85,6 +87,9 @@ def profile_index(request):
 
     return render(request, 'UI/user/profile.html', context)
 
+####
+# Send request to the API to get a list of projects this user belongs to.
+####
 def getProjects(request):
     rootURL = API_URL + 'projects/'
 
@@ -97,6 +102,9 @@ def getProjects(request):
     except:
         return ""
 
+####
+# Get details of an individual project with an ID equal to pk
+####
 def getSingleProject(request, pk):
     rootURL = API_URL + 'projects/' + pk + '/'
     data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
@@ -113,7 +121,10 @@ def settings_index(request):
     form = SettingsForm()
     return render(request, 'UI/user/settings.html', {'form': form})
 
-
+####
+# Registers a new user and creates a Profile objects at the same time.
+# Uses the Invitation Model to automatically add project if there are invitations for that email address.
+####
 def user_register(request):
     form = RegisterForm(request.POST)
     context = {}
@@ -172,6 +183,10 @@ def index(request):
     template = loader.get_template('UI/index.html')
     return HttpResponse(template.render(context, request))
 
+####
+# Ensures that some default values in the request.session dictionary are always set. This is especially important after
+# deleting/creating a new project and/or board.
+####
 def setDefaultRequestValues(request):
     projects = Profile.objects.get(user = request.user).projects.all()
     try:
@@ -182,6 +197,9 @@ def setDefaultRequestValues(request):
     except:
         pass
 
+####
+# Create new project / Get the template to create new project.
+####
 @login_required
 def new_project(request):
     if request.method == "GET":
@@ -221,6 +239,10 @@ def new_project(request):
 
             return redirect('/project/new/')
 
+####
+# Delete a project and redirect back to the same page.
+####
+@login_required
 def delete_project(request):
     if request.method == "POST":
         data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
@@ -235,6 +257,9 @@ def delete_project(request):
             request.session['error'] = 'Something went wrong. Please try again.'
         return redirect('/project/new/')
 
+####
+# Displays the dashboard with a specific project displayed.
+####
 @login_required
 def dashboard_project_view(request, pk):
     rootURL = API_URL + 'projects/tickets/' + pk
@@ -260,16 +285,9 @@ def dashboard_project_view(request, pk):
     template = loader.get_template('UI/user/dashboard.html')
     return HttpResponse(template.render(data, request))
 
-def getStateCounts(request, states):
-    if ACTIVE_PROJECT_ACCESSOR in request.session:
-        context = {}
-        for state in states:
-            taskCount = Ticket.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]), state = state.short_name).count()
-            if taskCount > 0:
-                context[state.short_name] = taskCount
-
-        return context
-    return None
+####
+# Use request.session[ACTIVE_PROJECT_ACCESSOR] to obtain all tickets belonging to said project
+####
 def getTickets(request):
     try:
         tickets = Ticket.objects.filter(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])).order_by('priority')
@@ -277,6 +295,9 @@ def getTickets(request):
     except ValueError:
         return None
 
+####
+# Use request.session[ACTIVE_PROJECT_ACCESSOR] to obtain all states belonging to the default board project
+####
 def getDefaultStates(request):
     if ACTIVE_PROJECT_ACCESSOR in request.session:
         board_object = Board.objects.get(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True)
@@ -284,13 +305,18 @@ def getDefaultStates(request):
         return states
     return None
 
+####
+# Use request.session['active_board'] to obtain all states belonging to specific project
+####
 def getBoardStates(request):
     if ACTIVE_PROJECT_ACCESSOR in request.session:
         board_object = Board.objects.get(pk = request.session['active_board'])
         states = State.objects.filter(board = board_object).order_by('order')
         return states
     return None
-
+####
+# Use request.session[ACTIVE_PROJECT_ACCESSOR] to obtain all boards belonging to said project
+####
 def getBoards(request):
     if ACTIVE_PROJECT_ACCESSOR in request.session:
         project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])
@@ -298,6 +324,10 @@ def getBoards(request):
         return boards
     return None
 
+
+####
+# Obtain the states missing from the board.
+####
 def getMissingDefaultStates(request):
         if ACTIVE_PROJECT_ACCESSOR in request.session and 'active_board' in request.session:
             board = Board.objects.get(pk = request.session['active_board'])
@@ -309,7 +339,9 @@ def getMissingDefaultStates(request):
             return missing_default_states
         return None
 
-
+####
+# Display all tickets in a TicketTable
+####
 @login_required
 def dashboard_ticket_view(request):
     tickets = getTickets(request)
@@ -347,6 +379,9 @@ def new_ticket_view(request):
             context = { 'form' : form,
                         'message' : 'The ticket was successfully created',
                         }
+            ####
+            # Send API request to POST new ticket
+            ####
             data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
             rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets/"
             post_fields = form.cleaned_data
@@ -403,6 +438,7 @@ def user_project_settings(request):
             if project not in user.profile.projects.all():
                 user.profile.projects.add(project)
                 user.profile.save()
+                #Stores in request.session temporarily to bypass redirect
                 request.session['message'] =  request.POST['txtUser'] + ' was successfully added to the project.'
             else:
                 error_message = "This user is already a collaborator on this project!"
@@ -410,20 +446,21 @@ def user_project_settings(request):
         except (User.DoesNotExist, Profile.DoesNotExist):
             error_message = "No user with that name."
             request.session['error_message'] = error_message
-            EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+" # Move this to a file to contain all REGEXs
+            EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+" #REGEX Matching all emails
             if re.match(EMAIL_REGEX, request.POST['txtUser']): ##If the non-existant user is an email address, send an invitation by email to use the software.
-                print ("Need to send an email now")
                 createInvitation(request.user, request.POST['txtUser'], request.session[ACTIVE_PROJECT_ACCESSOR])
                 message = "An invitation has been sent to this email address."
-                request.session['message'] = message
+
+                request.session['message'] = message #Stores in request.session temporarily to bypass redirect
                 del request.session['error_message']
         except PermissionDenied:
             error_message = "You are not allowed to do that."
             request.session['error_message'] = error_message
-        return HttpResponseRedirect('/project/collaborators')
+        return redirect('/project/collaborators')
     elif request.method == "GET":
         data_arr = []
         if ACTIVE_PROJECT_ACCESSOR in request.session:
+            #Get list of usernames for users belonging to the project.
             data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
             for user in data:
                 data_arr.append(user['username'])
@@ -465,26 +502,29 @@ def view_user_profile(request, slug):
     if request.user.is_authenticated:
         context['projects'] = getProjects(request)
 
-    if 'current_password_error' in request.session:
-        context['current_password_error'] = request.session['current_password_error']
-        del request.session['current_password_error']
-    if 'matching_password_error' in request.session:
-        context['matching_password_error'] = request.session['matching_password_error']
-        del request.session['matching_password_error']
+        ### If the values are present in the request.session, move them to the context and delete them.
+        if 'current_password_error' in request.session:
+            context['current_password_error'] = request.session['current_password_error']
+            del request.session['current_password_error']
+        if 'matching_password_error' in request.session:
+            context['matching_password_error'] = request.session['matching_password_error']
+            del request.session['matching_password_error']
 
-    if 'message' in request.session:
-        context['message'] = request.session['message']
-        del request.session['message']
-    elif 'warning' in request.session:
-        content['warning'] = request.session['warning']
-        del request.session['warning']
+        if 'message' in request.session:
+            context['message'] = request.session['message']
+            del request.session['message']
+        elif 'warning' in request.session:
+            content['warning'] = request.session['warning']
+            del request.session['warning']
 
     return render(request, 'UI/user/profile.html', context)
 
+###
+# Searches the projects and user for queryself.
+# Uses a paginator to paginate results in case there are too many users to display.
 def search(request):
     if 'type' not in request.GET:
         return redirect(request.get_full_path() + "&type=user")
-
 
     if request.GET['type'] == "user":
         users = filterUsers(request, request.GET['query'])
@@ -534,6 +574,7 @@ def search(request):
 
     return render(request, 'UI/search/search.html', context )
 
+# Belongs to search function, to filter users based on query
 def filterUsers(request, query):
     list_of_query_words = query.split(" ")
     q = Q()
@@ -542,6 +583,7 @@ def filterUsers(request, query):
     filteredUsers = User.objects.filter(q)
     return filteredUsers;
 
+# A part of searching, to filter projects based on query
 def filterProjects(request, query):
     list_of_query_words = query.split(" ")
     q = Q()
@@ -596,6 +638,7 @@ def reset_password(request, slug):
         profile.save()
         return render(request, 'UI/reset_password.html', {'message' : 'Success', 'slug' : slug})
 
+# Generic Helper function to send email to a set of recipients
 def send_email(template, recipients, subject, **kwargs):
     message = get_template(template).render(kwargs)
     email = EmailMessage(subject, message, to=recipients)
@@ -624,6 +667,10 @@ def ticket_detail(request, slug):
         except Ticket.DoesNotExist:
             raise Http404
         return render(request, 'UI/project/tickets/detail_view.html', context)
+
+    ###
+    # If the Ajax PUT request is sent to the view
+    ###
     elif request.method == "PUT":
         data_arr = {}
         try:
@@ -648,6 +695,7 @@ def ticket_detail(request, slug):
         except:
             pass
         return JsonResponse(data_arr)
+
     elif request.method == "POST":
         ticket = Ticket.objects.get(pk = int(slug))
         ticket.name = request.POST.get('ticket_name')
@@ -681,6 +729,7 @@ def ticket_detail(request, slug):
             ticket.save()
         return redirect('/project/tickets/detail/' + slug + '/')
 
+@login_required
 def delete_ticket(request, id):
     if request.method == "POST":
         try:
@@ -691,7 +740,7 @@ def delete_ticket(request, id):
             pass
     return redirect('/dashboard/tasks/new')
 
-
+@login_required
 def delete_state(request, pk):
     if request.method == "POST":
         board = Board.objects.get(pk = request.session['active_board'])
@@ -706,12 +755,14 @@ def delete_state(request, pk):
         return redirect("/project/boards")
     return redirect("/project/boards")
 
+@login_required
 def new_board(request):
     board = Board(owner = request.user, default = False, project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), title="Copy of Default Board")
     board.save()
     request.session['active_board'] = board.id
     return redirect("/dashboard/")
 
+@login_required
 def delete_board(request):
     board = Board.objects.get(pk = request.session['active_board'])
     if not board.default == True:
@@ -719,12 +770,14 @@ def delete_board(request):
         request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).pk
     return HttpResponseRedirect("/dashboard/")
 
+@login_required
 def update_board_display(request, pk):
     request.session['active_board'] = pk
     nextURL = request.GET.get('next', '/')
 
     return HttpResponseRedirect(nextURL)
 
+@login_required
 def project_ticket_changes(request):
     last_modified = request.GET['last_modified']
     val = datetime.strptime(last_modified, "%d/%m/%Y, %H:%M:%S")
@@ -745,6 +798,7 @@ def project_ticket_changes(request):
     data_arr = { 'data' : ticketsList }
     return JsonResponse(data_arr)
 
+@login_required
 def updateUserDetails(request):
     if request.method == "POST":
         try:
@@ -761,6 +815,7 @@ def updateUserDetails(request):
             raise Http404
         return redirect('/' + request.user.username)
 
+@login_required
 def updateUserPassword(request):
     if request.method == "POST":
         try:
@@ -783,30 +838,8 @@ def updateUserPassword(request):
 
         return redirect('/' + request.user.username)
 
-
-def uploadFiles(request):
-    files = Document.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]))
-
-    if request.method == "GET":
-        form = DocumentUploadForm()
-        context = {
-                    'projects' : Profile.objects.get(user = request.user).projects.all(),
-                    'form' : form,
-                    'files' : files,
-                    'path' : 'files',
-                }
-        return render(request, 'UI/project/files/upload.html', context)
-
-    elif request.method == "POST":
-        request.POST = request.POST.copy()
-        request.POST['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
-
-        form = DocumentUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return render(request, 'UI/project/files/upload.html', { 'files' : files, 'form' : DocumentUploadForm(), 'message' : 'The upload was successful.'})
-        return render(request, 'UI/project/files/upload.html', { 'files' : files, 'form' : form })
-
+#Display the calendar or create a new event.
+@login_required
 def displayCalendar(request):
     events = Event.objects.filter(project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR]))
     if request.method == "GET":
@@ -834,6 +867,7 @@ def displayCalendar(request):
             return render(request, 'UI/project/calendar/calendar.html', { 'events' : events, 'form' : NewEventForm(), 'message' : 'The event was successfully created.'})
         return render(request, 'UI/project/calendar/calendar.html', { 'events' : events, 'form' : form, 'warning' : 'Something went wrong when creating the event. Try again.' })
 
+@login_required
 def displayBoardSettings(request):
     active_board = Board.objects.get(pk = request.session['active_board'])
     if request.method == "GET":
@@ -847,6 +881,8 @@ def displayBoardSettings(request):
                     'path' : 'boards',
                     'projects' : Profile.objects.get(user = request.user).projects.all(),
                 }
+
+        # Transfer temp values from request.session to context
         if 'next' in request.session:
             del request.session['next']
         if 'message' in request.session:
@@ -875,7 +911,7 @@ def displayBoardSettings(request):
             request.session['message'] = 'The board was saved'
         return redirect('/project/boards')
 
-
+@login_required
 def updateStateOrder(request):
     context = {}
     try:
@@ -889,6 +925,7 @@ def updateStateOrder(request):
         context['error'] = "Something went wrong when trying to update the order. Please refresh and try again."
     return JsonResponse(context)
 
+@login_required
 def newState(request):
     if request.method == "POST":
         context = {}
@@ -905,6 +942,7 @@ def newState(request):
     elif request.method == "GET":
         return redirect('/project/boards')
 
+@login_required
 def copyStateToSubBoard(request, pk):
     if request.method == "POST":
         context = {}
@@ -922,19 +960,7 @@ def copyStateToSubBoard(request, pk):
     elif request.method == "GET":
         return redirect('/project/boards')
 
-def project_detail_view(request, slug):
-    if request.method == "GET":
-        project = Project.objects.get(name = slug)
-        if project.visibility == True:
-            profiles = Profile.objects.filter(projects = project)
-            context = {
-                        'project' : project,
-                        'collaborators' : User.objects.filter()
-                        }
-            return render(request, 'UI/project/detail_view.html', context)
-        return redirect('dashboard')
-
-
+@login_required
 def viewCollaborators(request):
     data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
     context = {
@@ -951,7 +977,7 @@ def viewCollaborators(request):
         del request.session['error']
     return render(request, 'UI/project/collaborators.html', context)
 
-
+@login_required
 def update_project(request):
     if request.method == "POST":
         project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
@@ -976,6 +1002,7 @@ def update_project(request):
 
         return redirect('/project/settings')
 
+@login_required
 def add_comment(request, pk):
     ticket = Ticket.objects.get(pk = pk)
     comment = Comment(user = request.user, content = request.POST.get('comment'), ticket = ticket)

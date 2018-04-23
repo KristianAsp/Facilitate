@@ -70,7 +70,7 @@
                 {%  if ticket.state == state.short_name %}
                   <div class="unique-ticket {{ticket.get_priority_display }}" style="background-color: #fff;" id = {{ ticket.id }}>
                     <div class="row ticket-header">
-                      <div style="float:left; top: 0; bottom: 0; left: 0; background-color: #c91818; border-radius: 0 0 100% 0; width: 25px; height: 25px;">
+                      <div class="quarter-circle">
                         <span style="color: #fff;" class="ticket-icon  {% if ticket.type == "T" %}fas fa-check-circle {% else %}fas fa-bug {% endif %}"></span>
                       </div>
                     </div>
@@ -158,7 +158,7 @@
   var lastUpdatedTime = new Date()
   var shouldUpdateConcurrently = true
   var f = concurrencyUpdateBoard
-  //setInterval(f, 2000);
+  setInterval(f, 2000);
   updateNumberOfTasksInStates()
   $(".dropdown-menu li a").click(function(){
     $(this).parents(".btn-group").find('.selection').text($(this).text());

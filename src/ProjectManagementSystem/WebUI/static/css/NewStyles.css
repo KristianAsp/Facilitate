@@ -490,11 +490,11 @@ a.article, a.article:hover {
 }
 
 .Medium {
-  border-left: 4px solid lightblue;
+  border-left: 4px solid #2F4F4F;
 }
 
 .Low {
-  border-left: 4px solid lightblue;
+  border-left: 4px solid #FFA07A;
 }
 
 .ticket-body {
@@ -778,4 +778,30 @@ a.article, a.article:hover {
 
 .filterRow {
   margin-top: 3em;
+}
+
+.quarter-circle {
+  float:left;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 0 0 100% 0;
+  width: 25px;
+  height: 25px;
+}
+
+.Critical .quarter-circle {
+  background-color: #c91818;
+}
+
+.High .quarter-circle {
+  background-color: lightblue;
+}
+
+.Medium .quarter-circle {
+  background-color: #2F4F4F;
+}
+
+.Low .quarter-circle {
+  background-color: #FFA07A;
 }
