@@ -33,11 +33,11 @@
                   {% for user in data %}
                   <div class="list-group-item">
                     <a href="{% url 'view_user_profile' slug=user.username %}">{{ user.username }}</a>
-
+                    {% if request.session.is_owner %}
                     <a style="float: right;" href="{% url 'remove_user_from_project' slug=user.username %}">X</a>
+                    {% endif %}
                   </div>
                   {% endfor %}
-
                 {% endif  %}
               </ul>
               <div class="panel-heading">

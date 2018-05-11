@@ -129,23 +129,26 @@ def user_register(request):
     form = RegisterForm(request.POST)
     context = {}
     if form.is_valid():
-        if re.match("^[\w_-]+$", form.cleaned_data.get('username')):
-            user = form.save(commit=False)
-            user.set_password(form.cleaned_data.get('password'))
-            user.save()
-            profile = Profile(user = user)
-            invitations = Invitation.objects.filter(user = user.email)
+        if User.objects.filter(email = form.cleaned_data.get('email')).count() == 0:
+            if re.match("^[\w_-]+$", form.cleaned_data.get('username')):
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data.get('password'))
+                user.save()
+                profile = Profile(user = user)
+                invitations = Invitation.objects.filter(user = user.email)
 
-            profile.save()
-            for invitation in invitations:
-                profile.projects.add(invitation.project)
+                profile.save()
+                for invitation in invitations:
+                    profile.projects.add(invitation.project)
 
-            profile.save()
-            login(request, user)
-            request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
-            return HttpResponseRedirect('/dashboard/')
+                profile.save()
+                login(request, user)
+                request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
+                return HttpResponseRedirect('/dashboard/')
+            else:
+                context['error'] = "Please only use standard characters in your username."
         else:
-            context['error'] = "Please only use standard characters in your username."
+            context['error'] = "That email address is taken."
     context['form'] = form
     return render(request, 'UI/register.html', context)
 
@@ -779,8 +782,6 @@ def update_board_display(request, pk):
 
 @login_required
 def project_ticket_changes(request):
-    last_modified = request.GET['last_modified']
-    val = datetime.strptime(last_modified, "%d/%m/%Y, %H:%M:%S")
     project = Project.objects.get(pk = request.session[ACTIVE_PROJECT_ACCESSOR])
     tickets = Ticket.objects.filter(project = project, last_modified__gt = datetime.now() - timedelta(seconds=2))
 

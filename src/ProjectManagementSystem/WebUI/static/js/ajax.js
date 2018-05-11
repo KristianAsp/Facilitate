@@ -13,7 +13,6 @@ function updateStateOfTask(taskID, stateID){
       'comment' : comment,
     },
     success: function(){
-
     },
     dataType: 'json',
   })
