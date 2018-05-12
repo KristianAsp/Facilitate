@@ -10,11 +10,13 @@
         <h2>Create a new project</h2>
         <p class="heading-description">A project contains all the initial settings needed. Participants can be added manually later or through the automated invitation system.</p>
       </div>
-      {% if message %}
-        <div class="alert alert-success">
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissable">
           <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Success!</strong>  {{ message }}
+          {{ message }}
         </div>
+        {% endfor %}
       {% endif %}
       <hr></hr>
 

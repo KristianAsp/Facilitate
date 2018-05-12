@@ -5,17 +5,13 @@
 <div id="content">
   <div class="container">
     <div class= "row ticket-title">
-      {% if message %}
-        <div class="alert alert-success">
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissable">
           <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Success!</strong>  {{ message }}
+          {{ message }}
         </div>
-      {% endif %}
-      {% if error %}
-        <div class="alert alert-danger">
-          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Something went wrong!</strong>  {{ error }}
-        </div>
+        {% endfor %}
       {% endif %}
       <div class="heading">
         <h2>{{ticket.short_name}} - {{ ticket.name }}</h2>

@@ -6,11 +6,13 @@
   <div class="container">
     <div class="heading">
       <h2>Calendar</h2>
-      {% if message %}
-        <div class="alert alert-success">
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissable">
           <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Success!</strong>  {{ message }}
+          {{ message }}
         </div>
+        {% endfor %}
       {% endif %}
       <p class="heading-description">Keep track of your project. Add future deadlines and important events to the calendar.</p>
     </div>

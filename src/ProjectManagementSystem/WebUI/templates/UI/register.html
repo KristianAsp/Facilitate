@@ -2,11 +2,13 @@
 {% block content %}
 
 <div id="content" class="login-dark">
-  {% if error %}
-  <div class="col-xs-10 col-xs-offset-1 alert alert-danger">
-    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-    <strong>Danger!</strong> {{ error }}
-  </div>
+  {% if messages %}
+    {% for message in messages %}
+    <div class="alert {{ message.tags }} alert-dismissable">
+      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+      {{ message }}
+    </div>
+    {% endfor %}
   {% endif %}
   <form method="post" action=" {% url 'register_index' %}">
     {% csrf_token %}

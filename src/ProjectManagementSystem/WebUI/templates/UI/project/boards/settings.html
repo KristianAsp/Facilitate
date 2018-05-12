@@ -6,16 +6,13 @@
 <div id="content" class="container">
   <div class="row page-heading">
     <div class="col-xs-12">
-      {% if message %}
-        <div class="alert alert-success">
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert {{ message.tags }} alert-dismissable">
           <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Success!</strong>  {{ message }}
+          {{ message }}
         </div>
-      {% elif error %}
-        <div class="alert alert-danger">
-          <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-          <strong>Something went wrong!</strong>  {{ error }}
-        </div>
+        {% endfor %}
       {% endif %}
       <div class="btn-group board-btn-group" style="float: left">
         <a class="btn btn-default board-btn">

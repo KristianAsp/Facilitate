@@ -14,16 +14,13 @@
           {% csrf_token %}
           <div class="row">
             <div class="">
-              {% if error %}
-              <div class="col-xs-11 alert alert-danger">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Danger!</strong> {{ error }}
-              </div>
-              {% elif message %}
-              <div class="col-xs-11 alert alert-success">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Success!</strong> {{ message }}.
-              </div>
+              {% if messages %}
+                {% for message in messages %}
+                <div class="alert {{ message.tags }} alert-dismissable">
+                  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                  {{ message }}
+                </div>
+                {% endfor %}
               {% endif %}
               <h3 class="details-header">
                 {% if request.user.is_authenticated == True and request.user.id == user.id %}

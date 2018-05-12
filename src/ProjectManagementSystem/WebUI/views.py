@@ -10,6 +10,7 @@ from django.template.loader import render_to_string, get_template
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from django.core.mail import EmailMessage
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -214,11 +215,6 @@ def new_project(request):
         if ACTIVE_PROJECT_ACCESSOR not in request.session:
             setDefaultRequestValues(request)
 
-        if 'message' in request.session:
-            context['message'] = request.session['message']
-            del request.session['message']
-
-
         return render(request, 'UI/project/new.html', context)
 
     if request.method == "POST":
@@ -237,7 +233,7 @@ def new_project(request):
             ####
             # Used to move error and success messages from one view to another when using a redirect
             ####
-            request.session['message'] = 'The project was successfully created'
+            messages.success(request, 'Your project was successfully created')
             request.session['is_owner'] = project.owner == request.user
 
             return redirect('/project/new/')
@@ -253,11 +249,11 @@ def delete_project(request):
             projectID = request.session[ACTIVE_PROJECT_ACCESSOR]
             project = Project.objects.get(pk = projectID)
             project.delete()
-            request.session['message'] = 'The project was successfully deleted'
+            messages.success(request, 'Your project was successfully created')
             del request.session[ACTIVE_PROJECT_ACCESSOR]
             del request.session['active_board']
         except:
-            request.session['error'] = 'Something went wrong. Please try again.'
+            messages.error(request, 'Something went wrong. Please try again.')
         return redirect('/project/new/')
 
 ####
@@ -367,20 +363,11 @@ def new_ticket_view(request):
     if request.method == "GET":
         form = NewTicketForm()
         context = { 'form' : form }
-
-        if 'message' in request.session:
-            context['message'] = request.session['message']
-            del request.session['message']
-        elif 'error' in request.session:
-            context['error'] = request.session['error']
-            del request.session['error']
-
         return render(request, 'UI/project/tickets/new.html', context )
     elif request.method == "POST":
         form = NewTicketForm(request.POST)
         if form.is_valid():
             context = { 'form' : form,
-                        'message' : 'The ticket was successfully created',
                         }
             ####
             # Send API request to POST new ticket
@@ -397,10 +384,11 @@ def new_ticket_view(request):
                 response = requests.post(rootURL, headers = data, data = post_fields)
                 responseJsonParsed = json.dumps(response.text)
                 if(response.status_code < 200 or response.status_code > 299):
-                    del context['message']
-                    context['warning'] = 'There was a problem creating your ticket. The error message was: ' + response.text
+                    messages.error(request, 'There was a problem creating your ticket. The error message was: ' + response.text)
+                else:
+                    messages.success(request,  'The ticket was successfully created')
             except:
-                context['warning'] = 'Something went wrong'
+                messages.error(request, 'Something went wrong')
 
             return render(request, 'UI/project/tickets/new.html', context)
 
@@ -421,12 +409,6 @@ def project_settings_view(request):
                     'projects' : getProjects(request),
                 }
         context['data'] = data
-        if 'error_message' in request.session:
-            context['error_message'] = request.session['error_message']
-            del request.session['error_message']
-        elif 'message' in request.session:
-            context['message'] = request.session['message']
-            del request.session['message']
         return render(request, 'UI/project/settings.html', context)
     elif request.method == "POST":
         return user_project_settings(request)
@@ -442,23 +424,23 @@ def user_project_settings(request):
                 user.profile.projects.add(project)
                 user.profile.save()
                 #Stores in request.session temporarily to bypass redirect
-                request.session['message'] =  request.POST['txtUser'] + ' was successfully added to the project.'
+                messages.success(request, request.POST['txtUser'] + ' was successfully added to the project.')
             else:
                 error_message = "This user is already a collaborator on this project!"
-                request.session['error_message'] = error_message
+                messages.error(request, error_message)
         except (User.DoesNotExist, Profile.DoesNotExist):
-            error_message = "No user with that name."
-            request.session['error_message'] = error_message
             EMAIL_REGEX = "[^@]+@[^@]+\.[^@]+" #REGEX Matching all emails
             if re.match(EMAIL_REGEX, request.POST['txtUser']): ##If the non-existant user is an email address, send an invitation by email to use the software.
                 createInvitation(request.user, request.POST['txtUser'], request.session[ACTIVE_PROJECT_ACCESSOR])
                 message = "An invitation has been sent to this email address."
 
-                request.session['message'] = message #Stores in request.session temporarily to bypass redirect
-                del request.session['error_message']
+                messages.success(request, message)
+            else:
+                error_message = "No user with that name."
+                messages.error(request, error_message)
         except PermissionDenied:
             error_message = "You are not allowed to do that."
-            request.session['error_message'] = error_message
+            messages.error(request, error_message)
         return redirect('/project/collaborators')
     elif request.method == "GET":
         data_arr = []
@@ -512,13 +494,6 @@ def view_user_profile(request, slug):
         if 'matching_password_error' in request.session:
             context['matching_password_error'] = request.session['matching_password_error']
             del request.session['matching_password_error']
-
-        if 'message' in request.session:
-            context['message'] = request.session['message']
-            del request.session['message']
-        elif 'warning' in request.session:
-            content['warning'] = request.session['warning']
-            del request.session['warning']
 
     return render(request, 'UI/user/profile.html', context)
 
@@ -600,7 +575,7 @@ def remove_user_from_project(request, slug):
     profile = Profile.objects.get(user = user)
     project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR])
     profile.projects.remove(project)
-    request.session['message'] =  user.username + ' was successfully removed from the project.'
+    messages.success(request, user.username + ' was successfully removed from the project.')
     return HttpResponseRedirect('/project/collaborators')
 
 def forgotten_password(request):
@@ -661,12 +636,6 @@ def ticket_detail(request, slug):
                         'states' : getDefaultStates(request),
                         'comments' : Comment.objects.filter(ticket = ticket)
                         }
-            if 'error' in request.session:
-                context['error'] = request.session['error']
-                del request.session['error']
-            if 'message' in request.session:
-                context['message'] = request.session['message']
-                del request.session['message']
         except Ticket.DoesNotExist:
             raise Http404
         return render(request, 'UI/project/tickets/detail_view.html', context)
@@ -727,7 +696,7 @@ def ticket_detail(request, slug):
                         ticket.assigned_to = profile.user
                         ticket.save()
                 except (Profile.DoesNotExist, Project.DoesNotExist):
-                    request.session['error'] = "There is no user with that username working on this project. Please try with a different username."
+                    messages.error(request, "There is no user with that username working on this project. Please try with a different username.")
         else:
             ticket.save()
         return redirect('/project/tickets/detail/' + slug + '/')
@@ -738,7 +707,7 @@ def delete_ticket(request, id):
         try:
             ticket = Ticket.objects.get(pk = int(id))
             ticket.delete()
-            request.session['message'] = 'The ticket was successfully deleted'
+            messages.success(request, 'The ticket was successfully deleted')
         except:
             pass
     return redirect('/dashboard/tasks/new')
@@ -810,9 +779,9 @@ def updateUserDetails(request):
             user.email = request.POST.get('email')
             user.save()
 
-            request.session['message'] = "Your profile was successfully updated"
+            messages.success(request, "Your profile was successfully updated")
         except User.DoesNotExist:
-            request.session['warning'] = "Something went wrong"
+            messages.error(request, "Something went wrong")
             raise Http404
         return redirect('/' + request.user.username)
 
@@ -831,10 +800,10 @@ def updateUserPassword(request):
                 user = authenticate(request, username = user.username, password = request.POST.get('password'))
                 if user is not None:
                     login(request, user)
-                    request.session['message'] = "Your password was successfully updated"
+                    messages.success(request, "Your password was successfully updated")
                     request.session['auth'] = get_auth_token(request, username = user.username, password = request.POST.get('password'))
         except User.DoesNotExist:
-            request.session['warning'] = "Something went wrong"
+            messages.error(request, "Something went wrong")
             raise Http404
 
         return redirect('/' + request.user.username)
@@ -886,30 +855,24 @@ def displayBoardSettings(request):
         # Transfer temp values from request.session to context
         if 'next' in request.session:
             del request.session['next']
-        if 'message' in request.session:
-            context['message'] = request.session['message']
-            del request.session['message']
-        elif 'error' in request.session:
-            context['error'] = request.session['error']
-            del request.session['error']
         return render(request, 'UI/project/boards/settings.html', context)
     elif request.method == "POST":
         active_board.title = request.POST.get('board_title')
         username = request.POST.get('board_owner')
         if username != active_board.owner.username:
             if username == '':
-                request.session['error'] = 'Oops. A board must have an owner'
+                messages.error(request, 'Oops. A board must have an owner')
             else:
                 try:
                     user = User.objects.get(username = username)
                     active_board.owner = user
                     active_board.save()
-                    request.session['message'] = 'The board has been updated.'
+                    messages.success(request, 'The board has been updated.')
                 except User.DoesNotExist:
-                    request.session['error'] = 'We couldn\'t find a user with that username working on this project. Try again!'
+                    messages.error(request, 'We couldn\'t find a user with that username working on this project. Try again!')
         else:
             active_board.save()
-            request.session['message'] = 'The board was saved'
+            messages.success(request, 'The board was saved')
         return redirect('/project/boards')
 
 @login_required
@@ -923,7 +886,7 @@ def updateStateOrder(request):
             state.order = stateIDs.index(str(state.pk)) + 1
             state.save()
     except:
-        context['error'] = "Something went wrong when trying to update the order. Please refresh and try again."
+        messages.error(request, "Something went wrong when trying to update the order. Please refresh and try again.")
     return JsonResponse(context)
 
 @login_required
@@ -937,7 +900,7 @@ def newState(request):
             context['name'] = state.name
             context['short_name'] = state.short_name
         except:
-            context['error'] = "Something went wrong when trying to create the new state. Please refresh and try again."
+            messages.error(request, "Something went wrong when trying to create the new state. Please refresh and try again.")
         return JsonResponse(context, safe = False)
 
     elif request.method == "GET":
@@ -955,7 +918,7 @@ def copyStateToSubBoard(request, pk):
             context['name'] = state.name
             context['short_name'] = state.short_name
         except:
-            context['error'] = "Something went wrong when trying to create the new state. Please refresh and try again."
+            messages.error(request, "Something went wrong when trying to create the new state. Please refresh and try again.")
         return JsonResponse(context, safe = False)
 
     elif request.method == "GET":
@@ -970,12 +933,6 @@ def viewCollaborators(request):
                 'projects' : Profile.objects.get(user = request.user).projects.all(),
     }
 
-    if 'message' in request.session:
-        context['message'] = request.session['message']
-        del request.session['message']
-    elif 'error' in request.session:
-        context['error'] = request.session['error']
-        del request.session['error']
     return render(request, 'UI/project/collaborators.html', context)
 
 @login_required
@@ -987,10 +944,10 @@ def update_project(request):
             if new_name != "":
                 project.name = new_name
                 project.save()
-                request.session['message'] = "The project has been renamed to " + new_name
+                messages.success(request, "The project has been renamed to " + new_name)
 
             else:
-                request.session['error'] = "A project cannot have a blank name"
+                message.error(request, "A project cannot have a blank name")
 
         else:
             if request.POST.get('visibility') == "public":
@@ -999,7 +956,7 @@ def update_project(request):
             else:
                 project.visibility = False
                 project.save()
-            request.session['message'] = "The project visibility has been saved."
+            messages.success(request, "The project visibility has been saved.")
 
         return redirect('/project/settings')
 

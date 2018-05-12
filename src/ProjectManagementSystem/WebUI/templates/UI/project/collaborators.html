@@ -8,17 +8,14 @@
       <div class="row">
         <div class="col-md-12">
           <h2 class="details-header">Project Collaborators</h2>
-          {% if error %}
-            <div class="alert alert-danger">
+          {% if messages %}
+            {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissable">
               <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-              <strong>Oops!</strong> {{ error_message }}
+              {{ message }}
             </div>
-          {% elif message %}
-            <div class="alert alert-success">
-              <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-              <strong>{{ message }}</strong>
-            </div>
-          {% endif  %}
+            {% endfor %}
+          {% endif %}
         </div>
       </div>
       <hr/>
