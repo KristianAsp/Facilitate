@@ -19,10 +19,10 @@ from .tables import TicketTable
 from .forms import *
 from WebAPI.models import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from .decorators import *
+from .constant_strings import *
 
 API_URL = 'http://127.0.0.1:8000/api/'
-ACTIVE_PROJECT_ACCESSOR = 'active_project'
 
 ######
 # Obtain authentication token from API. Stored in the request.session and used to access the API in future requests.
@@ -51,22 +51,21 @@ def user_login(request):
             return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/login.html', {'form': form})
 
+
+
 ######
 # Load the Dashboard. If the user is a member of a project, redirect to /project/ProjectID instead.
 ######
 @login_required
 def dashboard_index(request):
-    data = {'projects' : getProjects(request), 'path' : 'dashboard' }
-    try:
-        if request.session[ACTIVE_PROJECT_ACCESSOR]:
-            return HttpResponseRedirect("/dashboard/" + request.session[ACTIVE_PROJECT_ACCESSOR])
-    except:
-        try:
-            request.session[ACTIVE_PROJECT_ACCESSOR] = str(data['projects'][0]['id'])
-            return HttpResponseRedirect("/dashboard/" + request.session[ACTIVE_PROJECT_ACCESSOR])
-        except:
-            template = loader.get_template('UI/user/dashboard.html')
-            return HttpResponse(template.render(data, request))
+    data = {'path' : 'dashboard' }
+    setDefaultRequestValues(request)
+
+    if ACTIVE_PROJECT_ACCESSOR in request.session:
+        return HttpResponseRedirect("/dashboard/" + request.session[ACTIVE_PROJECT_ACCESSOR])
+
+    template = loader.get_template('UI/user/dashboard.html')
+    return HttpResponse(template.render(data, request))
 
 
 @login_required
@@ -118,6 +117,7 @@ def getSingleProject(request, pk):
 
 
 @login_required
+@check_if_valid_project_id
 def settings_index(request):
     form = SettingsForm()
     return render(request, 'UI/user/settings.html', {'form': form})
@@ -194,12 +194,14 @@ def index(request):
 def setDefaultRequestValues(request):
     projects = Profile.objects.get(user = request.user).projects.all()
     try:
-        if(len(projects) > 0):
+        if(len(projects) > 0) and ACTIVE_PROJECT_ACCESSOR not in request.session:
             request.session[ACTIVE_PROJECT_ACCESSOR] = str(projects[0].pk)
             request.session['is_owner'] = projects[0].owner == request.user
             request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
+            return True
     except:
         pass
+    return False
 
 ####
 # Create new project / Get the template to create new project.
@@ -260,6 +262,7 @@ def delete_project(request):
 # Displays the dashboard with a specific project displayed.
 ####
 @login_required
+@check_if_valid_project_id
 def dashboard_project_view(request, pk):
     rootURL = API_URL + 'projects/tickets/' + pk
     if 'active_board' not in request.session or pk != request.session[ACTIVE_PROJECT_ACCESSOR]:
@@ -342,6 +345,7 @@ def getMissingDefaultStates(request):
 # Display all tickets in a TicketTable
 ####
 @login_required
+@check_if_valid_project_id
 def dashboard_ticket_view(request):
     tickets = getTickets(request)
 
