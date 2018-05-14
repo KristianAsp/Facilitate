@@ -1,5 +1,6 @@
 import os
 from django.contrib.messages import constants as messages
+from .config import *
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,11 +12,10 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
+SECRET_KEY = C_SECRET_KEY
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+d&256$q*g_qf)mxf5&t74$gml6=+nak52k(&*&ch@w6bj6n^u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -121,8 +121,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'mydjangoproj@gmail.com'
-EMAIL_HOST_PASSWORD = 'testingpass'
+EMAIL_HOST_USER = C_EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = C_EMAIL_HOST_PASSWORD
 EMAIL_PORT = 587
 
 
