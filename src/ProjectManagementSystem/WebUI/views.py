@@ -88,32 +88,19 @@ def profile_index(request):
     return render(request, 'UI/user/profile.html', context)
 
 ####
-# Send request to the API to get a list of projects this user belongs to.
+# get projects that the current user belongs to.
 ####
 def getProjects(request):
-    rootURL = API_URL + 'projects/'
-
-    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session.get('auth', "")}
-    try:
-        ro = requests.get(rootURL, headers = data)
-        return ro.json()
-    except ValueError:
-        return {}
-    except:
-        return ""
+    return request.user.profile.projects.all()
 
 ####
 # Get details of an individual project with an ID equal to pk
 ####
 def getSingleProject(request, pk):
-    rootURL = API_URL + 'projects/' + pk + '/'
-    data = {'content-type': 'application/json', 'Authorization' : 'Token ' + request.session['auth']}
-
     try:
-        ro = requests.get(rootURL, headers = data)
-        return ro.json()
-    except ValueError:
-        return {}
+        return Project.objects.get(pk = pk)
+    except:
+        return None
 
 
 @login_required
@@ -264,14 +251,13 @@ def delete_project(request):
 @login_required
 @check_if_valid_project_id
 def dashboard_project_view(request, pk):
-    rootURL = API_URL + 'projects/tickets/' + pk
     if 'active_board' not in request.session or pk != request.session[ACTIVE_PROJECT_ACCESSOR]:
         request.session[ACTIVE_PROJECT_ACCESSOR] = str(pk)
         request.session['active_board'] = Board.objects.get(project = Project.objects.get(id = request.session[ACTIVE_PROJECT_ACCESSOR]), default = True).id
     project = getSingleProject(request, pk);
 
     try:
-        request.session['is_owner'] = project['owner'] == request.user.id
+        request.session['is_owner'] = project.owner.id == request.user.id
     except KeyError:
         request.session['is_owner'] = False
 
@@ -397,11 +383,9 @@ def new_ticket_view(request):
             return render(request, 'UI/project/tickets/new.html', context)
 
 def getUsersForProject(request, project_id):
-    rootURL = API_URL + 'projects/' + str(project_id) + '/users/all'
-    data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
-    response = requests.get(rootURL, headers = data)
-    responseJsonParsed = json.loads(response.text)
-    return responseJsonParsed
+    profiles = Profile.objects.filter(projects__in=[project_id])
+    users = User.objects.filter(profile__in=profiles)
+    return users
 
 @login_required
 def project_settings_view(request):
@@ -452,7 +436,7 @@ def user_project_settings(request):
             #Get list of usernames for users belonging to the project.
             data = getUsersForProject(request, request.session[ACTIVE_PROJECT_ACCESSOR])
             for user in data:
-                data_arr.append(user['username'])
+                data_arr.append(user.username)
         return JsonResponse(data_arr, safe=False)
 
 def createInvitation(user, email, project):
@@ -473,18 +457,11 @@ def view_user_profile(request, slug):
             }
 
     if request.user.is_authenticated:
-        rootURL = API_URL + 'users/' + slug + '/'
-        data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
-        response = requests.get(rootURL, headers = data)
-        if response.status_code == 500:
-            raise User.DoesNotExist #Raise exception for User that do not exist
-        elif response.status_code == 404:
+        try:
+            user = User.objects.get(username = slug)
+            context['user'] = user
+        except:
             raise Http404
-        else:
-            responseJsonParsed = json.loads(response.text)
-            del responseJsonParsed['password']
-
-        context['user'] = responseJsonParsed
     else:
         context['user'] = User.objects.get(username = slug)
 
