@@ -2,6 +2,14 @@
   <p class="navbar-btn">
     <a href="{% url 'new_project' %}" class="btn btn-primary">Create New Project</a>
   </p>
+
+</li>
+<li class="dropdown user-dropdown">
+  <a class="dropdown-toggle" data-toggle="dropdown" href="#">Notifications</a>
+  <ul class="dropdown-menu">
+    {% load notification_tags %}
+    {% render_notifications using request.user.notifications.active for box %}
+  </ul>
 </li>
 <li class="dropdown user-dropdown">
   <a class="dropdown-toggle account-menu" data-toggle="dropdown" aria-expanded="false" href="#"> <span class="glyphicon glyphicon-user"></span>  {{ request.user.username }}</a>

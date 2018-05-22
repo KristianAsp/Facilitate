@@ -9,6 +9,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.template.loader import render_to_string, get_template
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+from django.core import serializers
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -21,6 +22,7 @@ from WebAPI.models import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .decorators import *
 from .constant_strings import *
+from notify.signals import notify
 
 API_URL = 'http://127.0.0.1:8000/api/'
 
@@ -366,10 +368,10 @@ def new_ticket_view(request):
             except User.DoesNotExist:
                 post_fields['assigned_to'] = None
             try:
-                pdb.set_trace()
                 t = Ticket(name = post_fields['name'], description = post_fields['description'], project = Project.objects.get(pk = post_fields['project']), type = post_fields['type'], priority = post_fields['priority'], assigned_to = post_fields['assigned_to'])
                 t.save()
                 messages.success(request,  'The ticket was successfully created')
+                notify.send(request.user, recipient=User.objects.get(username="testAgain"), actor=request.user, verb='followed you', nf_type='followed_by_one_user')
             except:
                 messages.error(request, 'Something went wrong. Please try again.')
 
@@ -451,24 +453,13 @@ def view_user_profile(request, slug):
 
     if request.user.is_authenticated:
         try:
-            user = User.objects.get(username = slug)
+            user = User.objects.filter(username = slug).values()[0]
             context['user'] = user
+            context['projects'] = getProjects(request)
         except:
             raise Http404
     else:
-        context['user'] = User.objects.get(username = slug)
-
-    if request.user.is_authenticated:
-        context['projects'] = getProjects(request)
-
-        ### If the values are present in the request.session, move them to the context and delete them.
-        if 'current_password_error' in request.session:
-            context['current_password_error'] = request.session['current_password_error']
-            del request.session['current_password_error']
-        if 'matching_password_error' in request.session:
-            context['matching_password_error'] = request.session['matching_password_error']
-            del request.session['matching_password_error']
-
+        context['user'] = User.objects.filter(username = slug).values()[0]
     return render(request, 'UI/user/profile.html', context)
 
 ###

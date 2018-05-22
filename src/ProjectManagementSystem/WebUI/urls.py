@@ -5,10 +5,6 @@ from django.contrib.auth.views import logout
 from django.conf.urls.static import static
 from django.conf import settings
 
-
-
-
-
 urlpatterns = [
     url(r'^$', views.index),
     url(r'^login/$', views.login_index, name="user_login"),

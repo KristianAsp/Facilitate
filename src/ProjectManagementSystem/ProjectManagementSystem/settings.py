@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'widget_tweaks',
     'django_tables2',
+    'notify',
 ]
 
 REST_FRAMEWORK = {
@@ -148,6 +149,7 @@ USE_TZ = True
 MEDIA_ROOT = os.path.join(BASE_DIR, 'var/files/uploads/')
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 LOGIN_URL = '/login' #Redirect to this URL whenever it fails the @login_required decorator check
 #LOGIN_REDIRECT_URL = '/login'
 SESSION_COOKIE_AGE = 259200 #Set the duration for each session to last a maximum of 3 days
