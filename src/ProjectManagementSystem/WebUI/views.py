@@ -47,7 +47,7 @@ def user_login(request):
         user = authenticate(request, username = username, password = password)
         if user is not None:
             login(request, user)
-            request.session['auth'] = get_auth_token(request, username = username, password = password)
+            #request.session['auth'] = get_auth_token(request, username = username, password = password)
             return HttpResponseRedirect('/dashboard/')
     return render(request, 'UI/login.html', {'form': form})
 
@@ -131,7 +131,7 @@ def user_register(request):
 
                 profile.save()
                 login(request, user)
-                request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
+                #request.session['auth'] = get_auth_token(request, username = user.username, password = form.cleaned_data.get('password'))
                 return HttpResponseRedirect('/dashboard/')
             else:
                 context['error'] = "Please only use standard characters in your username."
@@ -359,26 +359,19 @@ def new_ticket_view(request):
         if form.is_valid():
             context = { 'form' : form,
                         }
-            ####
-            # Send API request to POST new ticket
-            ####
-            data = { 'Authorization' : 'Token ' + request.session.get('auth', "")}
-            rootURL = API_URL + 'projects/' + request.session[ACTIVE_PROJECT_ACCESSOR] + "/tickets/"
             post_fields = form.cleaned_data
             post_fields['project'] = request.session[ACTIVE_PROJECT_ACCESSOR]
             try:
-                post_fields['assigned_to'] = User.objects.get(username = post_fields['assigned_to']).pk
+                post_fields['assigned_to'] = User.objects.get(username = post_fields['assigned_to'])
             except User.DoesNotExist:
                 post_fields['assigned_to'] = None
             try:
-                response = requests.post(rootURL, headers = data, data = post_fields)
-                responseJsonParsed = json.dumps(response.text)
-                if(response.status_code < 200 or response.status_code > 299):
-                    messages.error(request, 'There was a problem creating your ticket. The error message was: ' + response.text)
-                else:
-                    messages.success(request,  'The ticket was successfully created')
+                pdb.set_trace()
+                t = Ticket(name = post_fields['name'], description = post_fields['description'], project = Project.objects.get(pk = post_fields['project']), type = post_fields['type'], priority = post_fields['priority'], assigned_to = post_fields['assigned_to'])
+                t.save()
+                messages.success(request,  'The ticket was successfully created')
             except:
-                messages.error(request, 'Something went wrong')
+                messages.error(request, 'Something went wrong. Please try again.')
 
             return render(request, 'UI/project/tickets/new.html', context)
 
@@ -782,7 +775,7 @@ def updateUserPassword(request):
                 if user is not None:
                     login(request, user)
                     messages.success(request, "Your password was successfully updated")
-                    request.session['auth'] = get_auth_token(request, username = user.username, password = request.POST.get('password'))
+                    #request.session['auth'] = get_auth_token(request, username = user.username, password = request.POST.get('password'))
         except User.DoesNotExist:
             messages.error(request, "Something went wrong")
             raise Http404

@@ -23,7 +23,7 @@ class Project(models.Model):
     short_name = models.CharField(max_length=30, null = True, blank = True)
     owner = models.ForeignKey(User)
     visibility = models.BooleanField(default = False) #True for a public project, false for a private
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -60,7 +60,7 @@ class Ticket(models.Model):
     description = models.TextField(blank = True, null = True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now = True)
-    created_on = models.DateTimeField(auto_now_add=datetime.now())
+    created_on = models.DateTimeField(auto_now_add=True)
     completed_on = models.DateTimeField(blank=True, null=True)
 
     type = models.CharField(
