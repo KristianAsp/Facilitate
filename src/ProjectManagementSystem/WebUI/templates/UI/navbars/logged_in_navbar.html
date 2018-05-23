@@ -2,11 +2,10 @@
   <p class="navbar-btn">
     <a href="{% url 'new_project' %}" class="btn btn-primary">Create New Project</a>
   </p>
-
 </li>
-<li class="dropdown user-dropdown">
-  <a class="dropdown-toggle" data-toggle="dropdown" href="#">Notifications</a>
-  <ul class="dropdown-menu">
+<li class="dropdown user-dropdown ">
+  <a class="dropdown-toggle mark-all-notifications" data-mark-action="read" data-toggle="dropdown" href="#">Notifications</a>
+  <ul class="dropdown-menu notification-box-list">
     {% load notification_tags %}
     {% render_notifications using request.user.notifications.active for box %}
   </ul>
