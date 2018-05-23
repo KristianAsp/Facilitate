@@ -371,7 +371,7 @@ def new_ticket_view(request):
                 t = Ticket(name = post_fields['name'], description = post_fields['description'], project = Project.objects.get(pk = post_fields['project']), type = post_fields['type'], priority = post_fields['priority'], assigned_to = post_fields['assigned_to'])
                 t.save()
                 messages.success(request,  'The ticket was successfully created')
-                notify.send(request.user, recipient=User.objects.get(username="testAgain"), actor=request.user, verb='followed you', nf_type='followed_by_one_user')
+                notify.send(request.user, recipient=User.objects.get(username="testAgain"), actor=request.user, verb='started following you', nf_type='followed_user')
             except:
                 messages.error(request, 'Something went wrong. Please try again.')
 

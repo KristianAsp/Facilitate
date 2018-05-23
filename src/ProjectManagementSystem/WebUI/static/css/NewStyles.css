@@ -185,6 +185,10 @@ a[aria-expanded="false"]::before, a[aria-expanded="true"]::before {
     font-size: 0.6em;
 }
 
+.mark-all-notifications[aria-expanded="false"]::before, .mark-all-notifications[aria-expanded="true"]::before {
+  content: unset !important;
+}
+
 a[aria-expanded="true"]::before {
     content: '\e260';
 }
@@ -804,4 +808,25 @@ a.article, a.article:hover {
 
 .Low .quarter-circle {
   background-color: #FFA07A;
+}
+
+.mark-all-notifications {
+  padding: 0px !important;
+  margin: 10px 20px !important;
+  margin-top: 1.4em !important;
+}
+
+.mark-all-notifications[data-badge]:after{
+  content:attr(data-badge);
+  position:absolute;
+  top:-10px;
+  right:-10px;
+  font-size:.7em;
+  background:green;
+  color:white;
+  width:18px;height:18px;
+  text-align:center;
+  line-height:18px;
+  border-radius:50%;
+  box-shadow:0 0 1px #333;
 }

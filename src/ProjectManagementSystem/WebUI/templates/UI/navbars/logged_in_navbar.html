@@ -3,11 +3,22 @@
     <a href="{% url 'new_project' %}" class="btn btn-primary">Create New Project</a>
   </p>
 </li>
-<li class="dropdown user-dropdown ">
-  <a class="dropdown-toggle mark-all-notifications" data-mark-action="read" data-toggle="dropdown" href="#">Notifications</a>
-  <ul class="dropdown-menu notification-box-list">
-    {% load notification_tags %}
-    {% render_notifications using request.user.notifications.active for box %}
+<li class="dropdown">
+  <a class="dropdown-toggle mark-all-notifications"{% if user.notifications.unread|length %} data-badge="{{user.notifications.unread|length}}"{% endif %}data-mark-action="read" data-toggle="dropdown" href="#"><i class="far fa-bell"></i></a>
+  <ul class="dropdown-menu">
+    <li>
+      Notifications
+    </li>
+    <li>
+      <div class="notificationPanel" style="position:relative; width: 100%; overflow: hidden;  min-width: 300px;">
+        <div class="notificationContent" style="overflow-y: scroll; height: 100%;">
+          <ul class="notification-box-list" style="margin:0; padding:0;list-style-type: none;">
+            {% load notification_tags %}
+            {% render_notifications using user.notifications.all for box %}
+          </ul>
+        </div>
+      </div>
+    </li>
   </ul>
 </li>
 <li class="dropdown user-dropdown">
