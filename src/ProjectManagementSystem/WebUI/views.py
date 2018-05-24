@@ -368,10 +368,12 @@ def new_ticket_view(request):
             except User.DoesNotExist:
                 post_fields['assigned_to'] = None
             try:
-                t = Ticket(name = post_fields['name'], description = post_fields['description'], project = Project.objects.get(pk = post_fields['project']), type = post_fields['type'], priority = post_fields['priority'], assigned_to = post_fields['assigned_to'])
+                t = Ticket(name = post_fields['name'], created_by = request.user, description = post_fields['description'], project = Project.objects.get(pk = post_fields['project']), type = post_fields['type'], priority = post_fields['priority'], assigned_to = post_fields['assigned_to'])
                 t.save()
                 messages.success(request,  'The ticket was successfully created')
                 notify.send(request.user, recipient=User.objects.get(username="testAgain"), actor=request.user, verb='started following you', nf_type='followed_user')
+            except User.DoesNotExist:
+                pass
             except:
                 messages.error(request, 'Something went wrong. Please try again.')
 

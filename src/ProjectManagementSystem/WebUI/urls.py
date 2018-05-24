@@ -14,7 +14,6 @@ urlpatterns = [
     url(r'^dashboard/$', views.dashboard_index),
     url(r'^profile/$', views.profile_index),
     url(r'^search$', views.search, name = "search"),
-    url(r'^settings/$', views.settings_index, name='user_settings'),
     url(r'^logout/$', views.user_logout, name='user_logout'),
     url(r'^project/new/$', views.new_project, name='new_project'),
     url(r'^dashboard/(?P<pk>[0-9]+)$', views.dashboard_project_view, name = 'project_index'),

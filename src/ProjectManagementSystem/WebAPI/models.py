@@ -62,6 +62,8 @@ class Ticket(models.Model):
     last_modified = models.DateTimeField(auto_now = True)
     created_on = models.DateTimeField(auto_now_add=True)
     completed_on = models.DateTimeField(blank=True, null=True)
+    created_by = models.ForeignKey(User, related_name="ticket_created_by")
+    associated_users = models.ManyToManyField(User, related_name="associated_users")
 
     type = models.CharField(
         max_length=1,
@@ -75,7 +77,7 @@ class Ticket(models.Model):
         default=PRIORITY_CHOICES[0][0],
     )
 
-    assigned_to = models.ForeignKey(User, blank = True, null = True)
+    assigned_to = models.ForeignKey(User, blank = True, null = True, related_name="ticket_assigned_to")
     state = models.CharField(
         max_length=5,
         choices=STATE_CHOICES,
@@ -159,3 +161,8 @@ def create_default_board_for_project(sender, instance=None, created=False, **kwa
             state = State(name = v, short_name = k, order = count, board = board)
             state.save()
             count += 1
+
+@receiver(post_save, sender=Ticket)
+def add_creator_to_associated_users(sender, instance=None, created=False, **kwargs):
+    if created:
+        instance.associated_users.add(instance.created_by)

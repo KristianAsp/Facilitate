@@ -1,5 +1,7 @@
 from WebAPI.models import *
 from .constant_strings import *
+from django.shortcuts import render, redirect
+
 
 ######
 # Check if the current request.session[ACTIVE_PROJECT_ACCESSOR] is still a va`lid project. Maybe the project has been deleted
