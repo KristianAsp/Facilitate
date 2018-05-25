@@ -80,6 +80,9 @@
           <div class="form-group">
             <label class="ticket-detail-field-label">Last Updated</label> <p class="ticket-detail-field immutable">{{ ticket.last_modified }} (UTC)</p><br>
           </div>
+          <div class="form-group">
+            <label class="ticket-detail-field-label">Created by</label> <a href="/{{ ticket.created_by.username }}"class="ticket-detail-field immutable">{{ ticket.created_by.get_full_name }}</a><br>
+          </div>
         </div>
     </div>
     <div class="row ticket-detail-row">

@@ -943,6 +943,10 @@ img {
     display: block!important;
 }
 
+.notification-box-list a {
+  padding-left: 0px !important;
+}
+
 [class*=" ti-"], [class^=ti-] {
     font-family: themify;
     speak: none;

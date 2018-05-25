@@ -371,7 +371,6 @@ def new_ticket_view(request):
                 t = Ticket(name = post_fields['name'], created_by = request.user, description = post_fields['description'], project = Project.objects.get(pk = post_fields['project']), type = post_fields['type'], priority = post_fields['priority'], assigned_to = post_fields['assigned_to'])
                 t.save()
                 messages.success(request,  'The ticket was successfully created')
-                notify.send(request.user, recipient=User.objects.get(username="testAgain"), actor=request.user, verb='started following you', nf_type='followed_user')
             except User.DoesNotExist:
                 pass
             except:
@@ -601,7 +600,7 @@ def ticket_detail(request, slug):
                         'type_choices' : TYPE_CHOICES,
                         'priority_choices' : PRIORITY_CHOICES,
                         'states' : getDefaultStates(request),
-                        'comments' : Comment.objects.filter(ticket = ticket)
+                        'comments' : Comment.objects.filter(ticket = ticket).order_by('created_on')
                         }
         except Ticket.DoesNotExist:
             raise Http404
@@ -613,6 +612,7 @@ def ticket_detail(request, slug):
     elif request.method == "PUT":
         data_arr = {}
         try:
+            send_alert = False
             ticket = Ticket.objects.get(pk = int(slug))
             put = QueryDict(request.body)
             if 'name' in put:
@@ -626,9 +626,15 @@ def ticket_detail(request, slug):
                 comment = Comment(user = request.user, content = put.get('comment'), ticket = ticket)
                 comment.save()
             if 'state' in put:
+                if put.get('state') != ticket.state:
+                    send_alert = True
+
                 ticket.state = put.get('state')
             ticket.save()
             data_arr['ticket'] = "SUCCESS"
+            if send_alert:
+                send_notification(request = request, target = ticket, recipient_list=list(ticket.associated_users.all().exclude(username = request.user.username)), actor=request.user, verb='updated the state of ', nf_type='followed_user')
+
         except Ticket.DoesNotExist:
             raise Http404
         except:
@@ -933,4 +939,9 @@ def add_comment(request, pk):
     comment = Comment(user = request.user, content = request.POST.get('comment'), ticket = ticket)
     comment.save()
 
+    send_notification(request = request, target = ticket, recipient_list=list(ticket.associated_users.all().exclude(username = request.user.username)), actor=request.user, verb='added a comment to ', nf_type='followed_user')
     return redirect('/project/tickets/detail/' + pk)
+
+def send_notification(request, recipient_list, actor, verb, nf_type, target):
+    if len(recipient_list) > 0:
+        notify.send(request.user, recipient_list=recipient_list, actor=actor, verb=verb, nf_type = nf_type, target = target)
