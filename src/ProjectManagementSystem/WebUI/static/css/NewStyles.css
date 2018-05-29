@@ -99,6 +99,10 @@ i, span {
     text-align: center;
 }
 
+#sidebar.active .sidebar-menu-text {
+  display:none;
+}
+
 #sidebar.active .sidebar-header h3 {
     display: none;
 }
@@ -811,14 +815,13 @@ a.article, a.article:hover {
 
 .mark-all-notifications {
   padding: 0px !important;
-  margin: 10px 20px !important;
-  margin-top: 1.4em !important;
+  margin: 0 !important;
   color: #73818f;
 }
 
 .navbar-nav>.open>.mark-all-notifications, .navbar-nav>.open>.peers {
   color: #2f353a !important;
-  background-color: #fff !important;
+  background-color: transparent !important;
 }
 
 .mark-all-notifications:hover {
@@ -827,10 +830,10 @@ a.article, a.article:hover {
 
 
 
-.mark-all-notifications[data-badge]:after{
+.notificationsbadge[data-badge]:after{
   content:attr(data-badge);
   position:absolute;
-  top:-10px;
+  top:6px;
   right:-10px;
   font-size:.7em;
   background:green;
@@ -900,6 +903,9 @@ a.article, a.article:hover {
   margin-right: 10px!important;
 }
 
+.mR-15{
+  margin-right: 15px !important ;
+}
 .peer>img {
   max-width: none;
 }
@@ -945,6 +951,13 @@ img {
 
 .notification-box-list a {
   padding-left: 0px !important;
+}
+
+.notification a {
+  margin: 0px;
+  display: inline;
+  width: 100%;
+  height: 100%;
 }
 
 [class*=" ti-"], [class^=ti-] {

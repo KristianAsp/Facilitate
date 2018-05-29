@@ -4,7 +4,11 @@
   </p>
 </li>
 <li class="dropdown drop-right">
-  <a class="dropdown-toggle mark-all-notifications"{% if user.notifications.unread|length %} data-badge="{{user.notifications.unread|length}}"{% endif %} data-mark-action="read" data-toggle="dropdown" href="#"><i class="far fa-bell"></i></a>
+  <a class="dropdown-toggle mR-15 peers mark-all-notifications" data-mark-action="read" data-toggle="dropdown" href="#">
+    <div class="peer">
+      <span class="far fa-bell notificationsbadge" {% if user.notifications.unread|length %} data-badge="{{user.notifications.unread|length}}"{% endif %}></span>
+    </div>
+  </a>
   <ul class="dropdown-menu">
     <li>
       Notifications

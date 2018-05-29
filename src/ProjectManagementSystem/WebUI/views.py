@@ -619,7 +619,10 @@ def ticket_detail(request, slug):
                 ticket.name = put.get('name')
             if 'assigned_to' in put:
                 try:
-                    ticket.assigned_to = User.objects.get(username = put.get('assigned_to'))
+                    user = User.objects.get(username = put.get('assigned_to'))
+                    ticket.assigned_to = user
+                    if not ticket.associated_users.filter(username = put.get('assigned_to')).exists():
+                        ticket.associated_users.add(user)
                 except User.DoesNotExist:
                     ticket.assigned_to = None
             if 'comment' in put:
@@ -633,7 +636,7 @@ def ticket_detail(request, slug):
             ticket.save()
             data_arr['ticket'] = "SUCCESS"
             if send_alert:
-                send_notification(request = request, target = ticket, recipient_list=list(ticket.associated_users.all().exclude(username = request.user.username)), actor=request.user, verb='updated the state of ', nf_type='followed_user')
+                send_notification(request = request, target = ticket, recipient_list=list(ticket.associated_users.all().exclude(username = request.user.username)), actor=request.user, verb='updated the state of ', nf_type='updated_state')
 
         except Ticket.DoesNotExist:
             raise Http404
@@ -921,14 +924,13 @@ def update_project(request):
 
             else:
                 message.error(request, "A project cannot have a blank name")
-
         else:
             if request.POST.get('visibility') == "public":
                 project.visibility = True
-                project.save()
+
             else:
                 project.visibility = False
-                project.save()
+            project.save()
             messages.success(request, "The project visibility has been saved.")
 
         return redirect('/project/settings')
